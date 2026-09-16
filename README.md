@@ -1,75 +1,90 @@
-# AI-first Analytic Hierarchy Process
+# AHP method — Go CLI + MCP
 
-Cognitive AHP for the web: prompt-first ChatKit agent, live hierarchical matrices, MCP optional, and chronotopic snapshots.
+Local Analytic Hierarchy Process: a single Go binary an agent can install, CSV as the source of truth, real AHP math (eigenvector + consistency ratio + repair hints), and a self-contained HTML report so humans can see the method.
 
-Humans own subjective judgments. The in-app agent assembles criteria and data through typed tools backed by a **REST** API — it does not silently decide for you.
+Agents do not pick the winner. They fill **proposal** judgments; humans commit in CSV (or via `ahp commit-proposals`).
 
-## Stack
+## Install
 
-- **Next.js** + **Bun**
-- **Drizzle** + SQLite (`better-sqlite3`)
-- **OpenAI ChatKit** (floating in-app agent) + Python FastAPI sidecar
-- **Radix UI** + **Tabler** icons
-- **Auth.js** (web) + ChatKit agent tokens / MCP Bearer API keys
-- **next-intl** — English / Portuguese (Brazil)
-
-## Docs (start here)
-
-See [`docs/README.md`](./docs/README.md) for vision, architecture, ChatKit, API, SSO, schema, and MVP playbook.
-
-### How agents connect
-
-| Who | How |
-|-----|-----|
-| Human (browser) | Auth.js — GitHub, Google, or **Dev Login** (`AUTH_DEV_LOGIN=true`) |
-| **In-app agent (primary)** | Floating **ChatKit** widget → `/api/chatkit` → Python agent tools → REST. See [`docs/chatkit.md`](./docs/chatkit.md). |
-| Cursor / external MCP | Optional: `/api/mcp` with `Authorization: Bearer <api_key>` from **Connect agent**. |
-
-Cursor does **not** ship an embeddable ChatKit-like widget for your product; use OpenAI ChatKit in-app.
-
-## Quick start
+Go 1.22+:
 
 ```bash
-cp .env.example .env
-# AUTH_SECRET=…  AUTH_DEV_LOGIN=true  OPENAI_API_KEY=sk-…
-
-bun install
-bun run db:push   # optional if ensureSchema already created tables
-
-# Terminal 1 — ChatKit agent
-bun run agent
-
-# Terminal 2 — Next.js
-bun run dev
+go install github.com/lazarok/ahp-method/cmd/ahp@latest
+# or from this repo:
+go build -o bin/ahp ./cmd/ahp
 ```
 
-Open http://localhost:3000 → **Dev Login** → `/app` → open the chat FAB → prompt e.g. “Compare iPhone 16 vs Pixel 9”. Review **proposal** judgments in the UI and commit what you agree with.
+## Workspace layout
 
-### Optional: Cursor MCP
+```
+my-decision/
+  ahp.toml
+  data/
+    criteria.csv
+    alternatives.csv
+    pairwise.csv      # Saaty 1–9 or 1/n; status proposal|committed
+    attributes.csv    # objective facts (not automatic weights)
+  output/             # generated
+    weights.csv
+    ranking.csv
+    compute.json
+    report.html
+```
 
-1. Create an API key in `/app/connect`
-2. Copy [`docs/mcp-cursor.example.json`](./docs/mcp-cursor.example.json) into your Cursor MCP config
-3. Replace the Bearer token with your key
+`pairwise.csv` `matrix` column:
 
-## Scripts
+- `criteria` — root criteria comparisons
+- `criteria:<parent_id>` — sub-criteria
+- `alt:<criterion_id>` — alternatives under a leaf criterion
 
-| Script | Purpose |
-|--------|---------|
-| `bun run agent` | ChatKit Python agent (`:8000`) |
-| `bun run dev` | Next.js dev server |
-| `bun run build` / `start` | Production |
-| `bun run typecheck` | TypeScript |
-| `bun run db:push` | Push Drizzle schema |
-| `bun run db:seed` | Demo data |
-| `bun run db:studio` | Drizzle Studio |
+## Commands (the function surface)
 
-## MVP status
+```bash
+ahp init ./my-decision --title "Choose a vendor"
+ahp set-goal "Choose a vendor" --description "..."
+ahp add-criterion cost "Total cost"
+ahp add-alternative acme "Acme"
+ahp set-attribute acme cost 180000 --unit USD --source RFP
+ahp set-pairwise criteria cost quality 3 --status proposal
+ahp commit-proposals
+ahp compute
+ahp status
+ahp validate
+ahp open
+ahp mcp          # stdio MCP for Cursor / Claude
+```
 
-- [x] Docs + architecture decisions
-- [x] Drizzle schema (decisions, criteria, pairwise, snapshots, chats, api keys)
-- [x] REST `/api/v1/*` + MCP `/api/mcp`
-- [x] Auth.js + API keys + ChatKit agent tokens
-- [x] In-app ChatKit floating agent (`docs/chatkit.md`)
-- [x] UI: criteria, Saaty pairwise, snapshots, i18n en/pt-BR
-- [ ] Full MCP OAuth AS (PRM + DCR) for Cursor/ChatGPT without API keys
-- [ ] Data-quality / multi-source discrepancy UI
+Example:
+
+```bash
+./bin/ahp compute -w examples/vendor-selection
+# open examples/vendor-selection/output/report.html
+```
+
+## MCP (agents)
+
+```json
+{
+  "mcpServers": {
+    "ahp": {
+      "command": "ahp",
+      "args": ["mcp"],
+      "env": { "AHP_WORKSPACE": "/absolute/path/to/workspace" }
+    }
+  }
+}
+```
+
+Tools: `init_workspace`, `set_goal`, `upsert_criterion`, `upsert_alternative`, `upsert_attribute`, `propose_pairwise`, `commit_pairwise`, `commit_proposals`, `get_state`, `workspace_status`, `missing_pairs`, `suggest_repairs`, `compute`, `render_report`.
+
+## What “good AHP” means here
+
+- Reciprocal Saaty matrices
+- Principal eigenvector local weights
+- Consistency index / ratio; CR ≤ 0.10 flagged
+- Repair hints when inconsistent
+- Hierarchical synthesis to a global ranking
+- Incomplete matrices: equal fallback + explicit missing pairs
+- Objective CSV data is provenance, not a silent scoring model
+
+See [docs/README.md](docs/README.md).

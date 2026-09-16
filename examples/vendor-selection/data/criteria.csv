@@ -1,0 +1,4 @@
+id,name,parent_id,description
+cost,Total cost of ownership,,"License, implementation, and 3-year run cost"
+quality,Extraction quality,,Accuracy on our document sample
+risk,Delivery risk,,"Implementation time, lock-in, and vendor viability"

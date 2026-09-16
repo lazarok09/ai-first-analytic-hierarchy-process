@@ -1,9 +1,10 @@
 {
   "mcpServers": {
     "ahp": {
-      "url": "http://localhost:3000/api/mcp",
-      "headers": {
-        "Authorization": "Bearer ahp_REPLACE_PREFIX_REPLACE_SECRET"
+      "command": "ahp",
+      "args": ["mcp"],
+      "env": {
+        "AHP_WORKSPACE": "/absolute/path/to/workspace"
       }
     }
   }

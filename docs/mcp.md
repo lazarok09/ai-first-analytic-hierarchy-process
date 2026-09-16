@@ -1,50 +1,37 @@
-# MCP endpoint
+# MCP
 
-## What we implemented
+Stdio server: `ahp mcp` (Go). No HTTP, no API keys.
 
-Streamable HTTP MCP at **`POST/GET/DELETE /api/mcp`** using:
+## Cursor example
 
-- `@modelcontextprotocol/sdk` **`McpServer`**
-- **`WebStandardStreamableHTTPServerTransport`** (Web Fetch `Request`/`Response` — fits Next.js App Router)
-- **Stateless** mode (`sessionIdGenerator: undefined`) + **`enableJsonResponse: true`**
+Copy [mcp-cursor.example.json](./mcp-cursor.example.json) into Cursor MCP settings.
 
-JSON responses avoid holding an in-memory SSE session map across Next.js invocations. Cursor remote MCP works with this shape.
-
-Tools call `src/lib/ahp/*` domain services directly (no HTTP loopback to `/api/v1`).
-
-## Auth
-
-1. Preferred: `Authorization: Bearer <api_key>` (`ahp_<prefix>_<secret>`, stored hashed in `api_keys`)
-2. Development: `x-user-id: <users.id>` when `NODE_ENV !== "production"` or `ALLOW_X_USER_ID=1`
+Set `AHP_WORKSPACE` to an absolute path, or pass `workspace` on every tool call.
 
 ## Tools
 
-| Tool | Notes |
-|------|--------|
-| `create_decision` | Create decision |
-| `get_decision_state` | Decision + criteria + alternatives + pairwise |
-| `list_criteria` | List criteria for a decision |
-| `upsert_criterion` | Create (`decisionId`) or update (`criterionId`) |
-| `propose_pairwise` | **Always** `status: proposal` |
-| `create_snapshot` | Requires `prompt` + `outputSummary` |
+| Tool | Writes | Notes |
+|------|--------|--------|
+| `init_workspace` | ahp.toml + empty CSVs | First call |
+| `set_goal` | ahp.toml | |
+| `upsert_criterion` | criteria.csv | |
+| `upsert_alternative` | alternatives.csv | |
+| `upsert_attribute` | attributes.csv | Facts only |
+| `propose_pairwise` | pairwise.csv | **Always** `proposal` |
+| `commit_pairwise` | pairwise.csv | Prefer human CSV edits |
+| `commit_proposals` | pairwise.csv | Bulk flip |
+| `get_state` | — | Ranking, CR, missing, repairs |
+| `workspace_status` | — | Compact counts |
+| `missing_pairs` | — | Gaps to propose |
+| `suggest_repairs` | — | CR > 0.10 pairs |
+| `compute` | output/* | Math + HTML |
+| `render_report` | output/* | Alias of compute |
 
-## Cursor
+## Agent loop
 
-See [mcp-cursor.example.json](./mcp-cursor.example.json). Copy into Cursor MCP settings (or `.cursor/mcp.json`).
-
-**Dev without an API key yet** — use only `x-user-id` (do not send a fake `Authorization` header; invalid Bearer fails before the header fallback):
-
-```json
-{
-  "mcpServers": {
-    "ahp": {
-      "url": "http://localhost:3000/api/mcp",
-      "headers": {
-        "x-user-id": "YOUR_DEV_USER_UUID"
-      }
-    }
-  }
-}
-```
-
-Create a real key with `createApiKey` (`src/lib/auth/api-keys.ts`) or the web “Connect agent” UI when available, then switch to `Authorization: Bearer ahp_…`.
+1. `init_workspace` or detect `ahp.toml`
+2. Upsert criteria, alternatives, attributes
+3. `missing_pairs` → `propose_pairwise`
+4. Stop for human commit unless explicitly asked
+5. `compute` → open `output/report.html`
+6. If inconsistent → `suggest_repairs` → propose revisions

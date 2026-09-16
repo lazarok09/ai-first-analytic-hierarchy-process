@@ -1,0 +1,10 @@
+alternative_id,criterion_id,value,unit,source,note
+acme,cost,180000,USD,RFP 2026,3-year TCO
+globex,cost,265000,USD,RFP 2026,3-year TCO
+initech,cost,210000,USD,RFP 2026,3-year TCO
+acme,quality,0.86,F1,internal bake-off,Invoice + contract sample
+globex,quality,0.94,F1,internal bake-off,Invoice + contract sample
+initech,quality,0.90,F1,internal bake-off,Invoice + contract sample
+acme,risk,6,weeks,vendor SOW,Time to production
+globex,risk,14,weeks,vendor SOW,Time to production
+initech,risk,4,weeks,vendor SOW,Time to production

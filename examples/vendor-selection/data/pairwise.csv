@@ -1,0 +1,13 @@
+matrix,left,right,value,status,note
+criteria,cost,quality,3,committed,Cost moderately more important than quality
+criteria,cost,risk,5,committed,Cost strongly more important than delivery risk
+criteria,quality,risk,3,committed,Quality moderately more important than risk
+alt:cost,acme,globex,3,committed,Acme cheaper than Globex
+alt:cost,acme,initech,2,committed,Acme somewhat cheaper than Initech
+alt:cost,globex,initech,1/2,committed,Initech cheaper than Globex
+alt:quality,acme,globex,1/5,committed,Globex much more accurate
+alt:quality,acme,initech,1/3,committed,Initech more accurate than Acme
+alt:quality,globex,initech,2,committed,Globex slightly better than Initech
+alt:risk,acme,globex,4,committed,Acme lower delivery risk (already reviewed)
+alt:risk,acme,initech,1/2,committed,Initech already in-house
+alt:risk,globex,initech,1/5,committed,Initech much less risky than Globex

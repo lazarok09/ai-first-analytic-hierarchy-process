@@ -1,0 +1,3 @@
+[decision]
+title = "Choose a document-processing vendor"
+description = "Procurement example: three vendors scored with AHP. Objective specs live in attributes.csv; pairwise values here are committed judgments."
