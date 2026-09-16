@@ -1,0 +1,15 @@
+[project]
+name = "ahp-chatkit-agent"
+version = "0.1.0"
+description = "AHP Studio ChatKit agent (FastAPI + openai-chatkit)"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.141.1",
+    "httpx>=0.28.1",
+    "openai-agents>=0.22.0",
+    "openai-chatkit>=1.6.5",
+    "pydantic>=2.13.5",
+    "python-dotenv>=1.2.3",
+    "uvicorn>=0.52.4",
+]

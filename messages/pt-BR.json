@@ -1,0 +1,169 @@
+{
+  "common": {
+    "appName": "AHP Studio",
+    "tagline": "Decida com estrutura. O julgamento é seu.",
+    "loading": "Carregando…",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "create": "Criar",
+    "close": "Fechar",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "signOut": "Sair",
+    "error": "Algo deu errado",
+    "retry": "Tentar de novo",
+    "empty": "Nada por aqui ainda",
+    "optional": "opcional"
+  },
+  "locale": {
+    "label": "Idioma",
+    "en": "English",
+    "pt-BR": "Português (Brasil)"
+  },
+  "nav": {
+    "decisions": "Decisões",
+    "connect": "Conectar agente",
+    "home": "Início"
+  },
+  "home": {
+    "title": "AHP Studio",
+    "subtitle": "Processo Analítico Hierárquico para humanos — a IA monta dados, você confirma o julgamento.",
+    "ctaSignIn": "Entrar",
+    "ctaOpenApp": "Abrir app"
+  },
+  "login": {
+    "eyebrow": "AHP Studio",
+    "title": "Entrar",
+    "subtitle": "Use OAuth para contas de produção, ou Dev Login para o MVP local sem segredos OAuth.",
+    "noProviders": "Nenhum provedor configurado. Defina AUTH_DEV_LOGIN=true ou segredos OAuth no .env.",
+    "github": "Continuar com GitHub",
+    "google": "Continuar com Google",
+    "devEmail": "E-mail de desenvolvimento",
+    "devLogin": "Dev login"
+  },
+  "decisions": {
+    "title": "Decisões",
+    "subtitle": "O que vamos decidir hoje?",
+    "empty": "Nenhuma decisão ainda. Crie uma para modelar critérios e julgamentos.",
+    "createTitle": "Nova decisão",
+    "titleLabel": "Título",
+    "titlePlaceholder": "ex.: Qual celular comprar?",
+    "descriptionLabel": "Descrição",
+    "descriptionPlaceholder": "Contexto, restrições ou stakeholders…",
+    "create": "Criar decisão",
+    "open": "Abrir",
+    "status": {
+      "draft": "Rascunho",
+      "active": "Ativa",
+      "archived": "Arquivada"
+    },
+    "updated": "Atualizada {date}"
+  },
+  "decision": {
+    "back": "Todas as decisões",
+    "criteria": "Critérios",
+    "importance": "Importância",
+    "snapshots": "Snapshots",
+    "notFound": "Decisão não encontrada"
+  },
+  "criteria": {
+    "title": "Critérios",
+    "subtitle": "Monte a hierarquia. Componentes aparecem conforme você adiciona dados.",
+    "empty": "Adicione pelo menos um critério para começar.",
+    "add": "Adicionar critério",
+    "name": "Nome",
+    "namePlaceholder": "ex.: Duração da bateria",
+    "description": "Descrição",
+    "descriptionPlaceholder": "O que este critério captura?",
+    "source": "Origem",
+    "sources": {
+      "user": "Você",
+      "agent": "Agente",
+      "import": "Importação"
+    },
+    "save": "Salvar critério",
+    "deleteConfirm": "Excluir este critério?",
+    "needMore": "Adicione outro critério para liberar a importância pareada."
+  },
+  "pairwise": {
+    "title": "Comparações de importância",
+    "subtitle": "Compare critérios na escala Saaty 1–9. Você confirma; agentes só propõem.",
+    "locked": "Comparações pareadas aparecem quando há pelo menos dois critérios.",
+    "leftVsRight": "{left} vs {right}",
+    "howMuchMore": "Quanto mais importante é o critério da esquerda?",
+    "scale": {
+      "1": "1 — Igual",
+      "2": "2 — Um pouco mais",
+      "3": "3 — Moderadamente mais",
+      "4": "4 — Moderadamente+",
+      "5": "5 — Fortemente mais",
+      "6": "6 — Fortemente+",
+      "7": "7 — Muito fortemente",
+      "8": "8 — Muito fortemente+",
+      "9": "9 — Extremamente mais"
+    },
+    "invert": "Preferir o da direita",
+    "statusProposal": "Proposta",
+    "statusCommitted": "Confirmado",
+    "statusUnset": "Não definido",
+    "commitAll": "Confirmar todas as propostas",
+    "commitOne": "Confirmar",
+    "saveValue": "Salvar comparação",
+    "proposalsPending": "{count, plural, one {# proposta aguardando sua confirmação} other {# propostas aguardando sua confirmação}}",
+    "noPairs": "Nenhum par para comparar."
+  },
+  "snapshots": {
+    "title": "Snapshots",
+    "subtitle": "Congele o estado do modelo para voltar durante a modelagem.",
+    "empty": "Nenhum snapshot ainda.",
+    "create": "Salvar snapshot",
+    "label": "Rótulo",
+    "labelPlaceholder": "ex.: Após revisão dos critérios",
+    "prompt": "Prompt",
+    "promptPlaceholder": "O que você pediu (ou uma nota sua)…",
+    "summary": "Resumo",
+    "summaryPlaceholder": "Resumo curto das mudanças do agente ou humanas…",
+    "created": "Criado {date}",
+    "quickSave": "Salvar rápido"
+  },
+  "connect": {
+    "title": "Conectar um agente",
+    "subtitle": "Opcional: chaves de API para MCP no Cursor. O agente principal é o chat ChatKit no app.",
+    "keysTitle": "Chaves de API",
+    "empty": "Nenhuma chave ainda.",
+    "create": "Criar chave de API",
+    "name": "Nome da chave",
+    "namePlaceholder": "ex.: Cursor notebook",
+    "createdOnce": "Copie esta chave agora — ela não será mostrada de novo.",
+    "revoke": "Revogar",
+    "prefix": "Prefixo",
+    "instructionsTitle": "Configuração MCP no Cursor",
+    "instructionsBody": "Adicione uma entrada de servidor como em docs/mcp-cursor.example.json, substitua o Bearer pela sua chave e reinicie o MCP do Cursor.",
+    "examplePath": "docs/mcp-cursor.example.json",
+    "endpoint": "Endpoint MCP",
+    "exampleConfig": "Config de exemplo"
+  },
+  "chatkit": {
+    "title": "Agente AHP",
+    "subtitle": "Peça para montar critérios — o julgamento é seu.",
+    "toggle": "Abrir chat do agente",
+    "loading": "Conectando agente…",
+    "bootstrapError": "Não foi possível iniciar o ChatKit. Entre e tente de novo.",
+    "greeting": "O que vamos decidir hoje?",
+    "placeholder": "ex.: Comparar iPhone 16 vs Pixel 9…",
+    "defaultThreadTitle": "Sessão ChatKit",
+    "promptCompare": "Comparar duas opções",
+    "promptCompareText": "Ajude-me a comparar dois produtos: monte critérios e alternativas, e proponha julgamentos de importância para eu revisar.",
+    "promptCriteria": "Sugerir critérios",
+    "promptCriteriaText": "Sugira uma hierarquia de critérios sólida para a decisão atual e adicione-os como critérios do agente.",
+    "promptJudgments": "Propor julgamentos",
+    "promptJudgmentsText": "Proponha comparações Saaty de importância para meus critérios (somente como propostas). Não confirme."
+  },
+  "footer": {
+    "references": "Artigos originais",
+    "saaty": "Saaty (1977) — Analytic Hierarchy Process",
+    "gaussian": "Santos, Costa & Gomes (2021) — AHP-Gaussiano"
+  }
+}

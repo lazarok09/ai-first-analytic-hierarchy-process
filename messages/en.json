@@ -1,0 +1,169 @@
+{
+  "common": {
+    "appName": "AHP Studio",
+    "tagline": "Decide with structure. You own the judgment.",
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "close": "Close",
+    "copy": "Copy",
+    "copied": "Copied",
+    "signOut": "Sign out",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "empty": "Nothing here yet",
+    "optional": "optional"
+  },
+  "locale": {
+    "label": "Language",
+    "en": "English",
+    "pt-BR": "Português (Brasil)"
+  },
+  "nav": {
+    "decisions": "Decisions",
+    "connect": "Connect agent",
+    "home": "Home"
+  },
+  "home": {
+    "title": "AHP Studio",
+    "subtitle": "Analytic Hierarchy Process for humans — AI assembles data, you commit judgment.",
+    "ctaSignIn": "Sign in",
+    "ctaOpenApp": "Open app"
+  },
+  "login": {
+    "eyebrow": "AHP Studio",
+    "title": "Sign in",
+    "subtitle": "Use OAuth for production accounts, or Dev Login for local MVP without OAuth secrets.",
+    "noProviders": "No auth providers configured. Set AUTH_DEV_LOGIN=true or OAuth client secrets in .env.",
+    "github": "Continue with GitHub",
+    "google": "Continue with Google",
+    "devEmail": "Dev email",
+    "devLogin": "Dev login"
+  },
+  "decisions": {
+    "title": "Decisions",
+    "subtitle": "What are we deciding today?",
+    "empty": "No decisions yet. Create one to start modeling criteria and judgments.",
+    "createTitle": "New decision",
+    "titleLabel": "Title",
+    "titlePlaceholder": "e.g. Which phone should I buy?",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Context, constraints, or stakeholders…",
+    "create": "Create decision",
+    "open": "Open",
+    "status": {
+      "draft": "Draft",
+      "active": "Active",
+      "archived": "Archived"
+    },
+    "updated": "Updated {date}"
+  },
+  "decision": {
+    "back": "All decisions",
+    "criteria": "Criteria",
+    "importance": "Importance",
+    "snapshots": "Snapshots",
+    "notFound": "Decision not found"
+  },
+  "criteria": {
+    "title": "Criteria",
+    "subtitle": "Build the hierarchy. Components appear as you add data.",
+    "empty": "Add at least one criterion to begin.",
+    "add": "Add criterion",
+    "name": "Name",
+    "namePlaceholder": "e.g. Battery life",
+    "description": "Description",
+    "descriptionPlaceholder": "What does this criterion capture?",
+    "source": "Source",
+    "sources": {
+      "user": "You",
+      "agent": "Agent",
+      "import": "Import"
+    },
+    "save": "Save criterion",
+    "deleteConfirm": "Delete this criterion?",
+    "needMore": "Add another criterion to unlock pairwise importance."
+  },
+  "pairwise": {
+    "title": "Importance comparisons",
+    "subtitle": "Compare criteria on the Saaty 1–9 scale. You commit; agents only propose.",
+    "locked": "Pairwise comparisons appear when there are at least two criteria.",
+    "leftVsRight": "{left} vs {right}",
+    "howMuchMore": "How much more important is the left criterion?",
+    "scale": {
+      "1": "1 — Equal",
+      "2": "2 — Slightly more",
+      "3": "3 — Moderately more",
+      "4": "4 — Moderately+",
+      "5": "5 — Strongly more",
+      "6": "6 — Strongly+",
+      "7": "7 — Very strongly",
+      "8": "8 — Very strongly+",
+      "9": "9 — Extremely more"
+    },
+    "invert": "Prefer right instead",
+    "statusProposal": "Proposal",
+    "statusCommitted": "Committed",
+    "statusUnset": "Unset",
+    "commitAll": "Commit all proposals",
+    "commitOne": "Commit",
+    "saveValue": "Save comparison",
+    "proposalsPending": "{count, plural, one {# proposal awaiting your commit} other {# proposals awaiting your commit}}",
+    "noPairs": "No pairs to compare."
+  },
+  "snapshots": {
+    "title": "Snapshots",
+    "subtitle": "Freeze model state so you can rewind during modeling.",
+    "empty": "No snapshots yet.",
+    "create": "Save snapshot",
+    "label": "Label",
+    "labelPlaceholder": "e.g. After first criteria review",
+    "prompt": "Prompt",
+    "promptPlaceholder": "What you asked (or note for yourself)…",
+    "summary": "Summary",
+    "summaryPlaceholder": "Short summary of agent or human changes…",
+    "created": "Created {date}",
+    "quickSave": "Quick save"
+  },
+  "connect": {
+    "title": "Connect an agent",
+    "subtitle": "Optional: API keys for Cursor MCP. The primary agent is the in-app ChatKit chat.",
+    "keysTitle": "API keys",
+    "empty": "No API keys yet.",
+    "create": "Create API key",
+    "name": "Key name",
+    "namePlaceholder": "e.g. Cursor laptop",
+    "createdOnce": "Copy this key now — it will not be shown again.",
+    "revoke": "Revoke",
+    "prefix": "Prefix",
+    "instructionsTitle": "Cursor MCP setup",
+    "instructionsBody": "Add a server entry like docs/mcp-cursor.example.json, replace the Bearer token with your key, and restart Cursor MCP.",
+    "examplePath": "docs/mcp-cursor.example.json",
+    "endpoint": "MCP endpoint",
+    "exampleConfig": "Example config"
+  },
+  "chatkit": {
+    "title": "AHP agent",
+    "subtitle": "Prompt to assemble criteria — you own the judgments.",
+    "toggle": "Open agent chat",
+    "loading": "Connecting agent…",
+    "bootstrapError": "Could not start ChatKit session. Sign in and try again.",
+    "greeting": "What are we deciding today?",
+    "placeholder": "e.g. Compare iPhone 16 vs Pixel 9…",
+    "defaultThreadTitle": "ChatKit session",
+    "promptCompare": "Compare two options",
+    "promptCompareText": "Help me compare two products: gather criteria and alternatives, propose importance judgments for me to review.",
+    "promptCriteria": "Suggest criteria",
+    "promptCriteriaText": "Suggest a solid criteria hierarchy for my current decision and add them as agent-sourced criteria.",
+    "promptJudgments": "Propose judgments",
+    "promptJudgmentsText": "Propose Saaty pairwise importance for my criteria (as proposals only). Do not commit."
+  },
+  "footer": {
+    "references": "Original papers",
+    "saaty": "Saaty (1977) — Analytic Hierarchy Process",
+    "gaussian": "Santos, Costa & Gomes (2021) — AHP-Gaussian"
+  }
+}
