@@ -1,0 +1,41 @@
+matrix,left,right,value,status,note
+criteria,isolation,accuracy,3,committed,Tracking bleed control slightly outweighs mix accuracy for interface use
+criteria,isolation,comfort,3,committed,Isolation over comfort
+criteria,isolation,value,2,committed,Isolation slightly over price within band
+criteria,isolation,drive,7,committed,All candidates are easy to drive
+criteria,accuracy,comfort,3,committed,Accuracy over comfort
+criteria,accuracy,value,2,committed,Accuracy slightly over price
+criteria,accuracy,drive,7,committed,Driveability is almost irrelevant here
+criteria,value,comfort,2,committed,Budget band: value slightly over comfort
+criteria,comfort,drive,5,committed,Comfort matters; drive does not differentiate
+criteria,value,drive,7,committed,Price matters; ohms do not
+alt:isolation,akg_k52,samson_sr850,7,committed,closed over-ear vs semi-open
+alt:isolation,akg_k52,superlux_hd681,5,committed,closed over-ear vs semi-open
+alt:isolation,akg_k52,akg_k414p,3,committed,over-ear seal better than on-ear
+alt:isolation,akg_k414p,samson_sr850,3,committed,closed on-ear still beats semi-open leak
+alt:isolation,akg_k414p,superlux_hd681,3,committed,closed on-ear vs semi-open
+alt:isolation,samson_sr850,superlux_hd681,1,committed,both leak similarly
+alt:accuracy,samson_sr850,akg_k52,3,committed,SR850 more revealing/reference
+alt:accuracy,samson_sr850,akg_k414p,3,committed,SR850 more studio-reference than portable K414P
+alt:accuracy,samson_sr850,superlux_hd681,2,committed,Samson cleaner than peaky HD681
+alt:accuracy,superlux_hd681,akg_k52,2,committed,HD681 more revealing despite brightness
+alt:accuracy,superlux_hd681,akg_k414p,2,committed,HD681 more analytical than K414P
+alt:accuracy,akg_k52,akg_k414p,2,committed,K52 slightly more neutral for desk monitoring
+alt:comfort,akg_k52,superlux_hd681,4,committed,K52 light auto-adjust; HD681 pads often criticized
+alt:comfort,samson_sr850,superlux_hd681,4,committed,SR850 generally more comfortable
+alt:comfort,akg_k414p,superlux_hd681,2,committed,K414P ok short sessions; HD681 pads worse
+alt:comfort,akg_k52,akg_k414p,3,committed,over-ear long-session comfort vs on-ear clamp
+alt:comfort,samson_sr850,akg_k414p,2,committed,velvet pads / semi-open comfort edge
+alt:comfort,akg_k52,samson_sr850,1,committed,similar comfort class
+alt:drive,akg_k52,samson_sr850,2,committed,110 dB SPL/V vs typical
+alt:drive,akg_k52,akg_k414p,1,committed,both easy AKG
+alt:drive,akg_k52,superlux_hd681,2,committed,slightly easier
+alt:drive,samson_sr850,akg_k414p,1,committed,both easy ~32 ohm
+alt:drive,samson_sr850,superlux_hd681,1,committed,both 32 ohm class
+alt:drive,akg_k414p,superlux_hd681,1,committed,both easy
+alt:value,superlux_hd681,akg_k414p,2,committed,289 vs 315 BRL (Cheda's vs King Musical)
+alt:value,superlux_hd681,akg_k52,2,committed,289 vs 338 BRL (Cheda's vs Serenata)
+alt:value,superlux_hd681,samson_sr850,2,committed,289 vs 369 BRL
+alt:value,akg_k414p,akg_k52,1,committed,315 vs 338 — quase empate
+alt:value,akg_k414p,samson_sr850,2,committed,315 vs 369
+alt:value,akg_k52,samson_sr850,1,committed,338 vs 369 — praticamente empate

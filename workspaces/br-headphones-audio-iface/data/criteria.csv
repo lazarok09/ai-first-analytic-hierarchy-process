@@ -1,0 +1,6 @@
+id,name,parent_id,description
+accuracy,Monitoring accuracy,,How revealing/neutral the headphone is for editing and rough mix checks
+comfort,Long-session comfort,,"Clamp, weight, pads for multi-hour sessions"
+drive,Audio-interface driveability,,Impedance/sensitivity match for typical entry/mid interface headphone amps
+isolation,Isolation for tracking,,Closed-back / leak control so mic bleed is usable while tracking through the interface
+value,Price / value within R$200–400,,Street price in Brazil and bang-for-buck inside the budget band
