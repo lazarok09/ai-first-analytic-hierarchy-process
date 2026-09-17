@@ -124,6 +124,40 @@ var entries = []Entry{
 		Examples: []string{"ahp compute", "ahp compute --include-proposals"},
 	},
 	{
+		ID: "explain", CLI: "ahp explain", MCP: "explain",
+		Short: "Criterion contributions for alternative global weights",
+		Long:  "contribution = leaf criterion weight × local alternative weight under that criterion.",
+		Examples: []string{
+			"ahp explain",
+			"ahp explain shure_srh240a --json",
+		},
+	},
+	{
+		ID: "sensitivity", CLI: "ahp sensitivity", MCP: "sensitivity",
+		Short: "±δ leaf-weight tornado and rank-reversal thresholds",
+		Long:  "Writes output/sensitivity.json. Requires a complete workspace.",
+		Examples: []string{
+			"ahp sensitivity",
+			"ahp sensitivity --delta 0.10 --json",
+		},
+	},
+	{
+		ID: "rate", CLI: "ahp rate", MCP: "suggest_from_attributes",
+		Short: "Opt-in: attributes → Saaty pairwise proposals (never commits)",
+		Long:  "Alias of ahp pair suggest-from-attributes. Use --prefer lower for price-like criteria.",
+		Examples: []string{
+			"ahp rate --criterion value --prefer lower --dry-run",
+			"ahp pair suggest-from-attributes --criterion value --prefer lower",
+		},
+	},
+	{
+		ID: "pair-suggest-from-attributes", CLI: "ahp pair suggest-from-attributes", MCP: "suggest_from_attributes",
+		Short: "Propose alt pairwise from numeric attributes",
+		Examples: []string{
+			"ahp pair suggest-from-attributes --criterion value --prefer lower --dry-run",
+		},
+	},
+	{
 		ID: "catalog", CLI: "ahp catalog", MCP: "",
 		Short: "List CLI↔MCP catalog entries",
 		Examples: []string{"ahp catalog --json"},

@@ -44,4 +44,11 @@ Objective facts keyed by alternative × criterion. Never enter the eigenvector.
 - `weights.csv` — local weights + CR per matrix
 - `ranking.csv` — global alternative order
 - `compute.json` — full payload
-- `report.html` — method + matrices + CSV dump + repairs
+- `report.html` — method + ranking + contribution breakdown + matrices + CSV dump + repairs
+- `sensitivity.json` — written by `ahp sensitivity` (tornado / rank-reversal)
+
+## Attribute → proposals (opt-in)
+
+`ahp rate --criterion <id> --prefer higher|lower` (alias: `ahp pair suggest-from-attributes`)
+reads numeric `attributes.csv` rows and writes **proposal** Saaty pairs on `alt:<criterion>`.
+Never auto-commits; committed pairs are skipped.

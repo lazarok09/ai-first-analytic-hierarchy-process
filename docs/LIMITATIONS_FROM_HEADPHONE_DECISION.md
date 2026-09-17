@@ -11,20 +11,29 @@ This note is not a product wishlist. It lists **gaps that forced work or math ou
 
 ## Decision outcome (for context)
 
-After researching street prices, structuring criteria, writing objective attributes, converting facts → Saaty judgments, and computing:
+**Price rule (corrected):** Pix/boleto à vista from Brazilian music shops or `br.*` official sites only — **no USD→BRL conversion**, no US Amazon, no marketplace 3P outliers.
+
+| Alt | Ref. price (BRL) | Source |
+|-----|------------------|--------|
+| Superlux HD681 | **289** | Cheda's SP Pix (R$288.90) |
+| AKG K414P | **315** | King Musical boleto (R$314.99) |
+| AKG K52 | **338** | Serenata BH à vista |
+| Samson SR850 | **369** | King Musical boleto (R$368.99) |
+
+**Dropped:** Shure SRH240A — Magalu/Buscapé ~**R$505** (out of R$200–400). Earlier ~R$359 KaBuM 3P was discarded.
+
+After recompute with BR prices + K414P replacing Shure:
 
 | Rank | Alternative | Global weight |
 |------|-------------|----------------|
-| 1 | **Shure SRH240A** (~R$359) | 0.296 |
-| 2 | Samson SR850 (~R$293) | 0.285 |
-| 3 | AKG K52 (~R$399) | 0.274 |
-| 4 | Superlux HD681 (~R$387) | 0.145 |
+| 1 | **AKG K52** (R$338) | 0.375 |
+| 2 | Samson SR850 (R$369) | 0.229 |
+| 3 | AKG K414P (R$315) | 0.200 |
+| 4 | Superlux HD681 (R$289) | 0.196 |
 
-Criteria weights (committed): isolation **0.41**, accuracy **0.26**, value **0.19**, comfort **0.11**, drive **0.03**. All matrices CR ≤ 0.10 (criteria CR ≈ 0.055).
+Criteria weights (committed): isolation **0.41**, accuracy **0.26**, value **0.19**, comfort **0.11**, drive **0.03**. All matrices CR ≤ 0.10.
 
-**Interpretation:** with isolation prioritized for mic tracking through an interface, closed-backs win; Shure and AKG are close; Samson nearly ties if you drop isolation importance (mixing-only / semi-open OK). The top three differ by ~2 percentage points — a classic case for sensitivity / explain, which the CLI does not yet provide.
-
-Prices and stock move; treat the ranking as a method demo, not purchasing advice.
+**Interpretation:** with isolation prioritized for mic tracking, the closed over-ear K52 leads clearly. Samson stays #2 on accuracy despite semi-open leak. K414P and HD681 are nearly tied for 3rd. Prices and stock move; treat as method demo, not purchasing advice.
 
 ---
 
@@ -136,8 +145,8 @@ What *did* work well: `init` → `status`/`next` → structure verbs → `pair s
 |----------|------------|--------------|--------|
 | P0 | L5 empty `complete=true`; L4 missing-vs-proposals messaging | Phase A polish | **Done** (2026-09-16): structure-aware `complete`, `proposals_fill_gaps` / coverage fields, `next`→`plan` |
 | P0 | L6 hide/label equal-weight ranking | Phase A / C incomplete flags | **Done**: `ranking_mode=equal_fallback\|ahp`; human status hides peek |
-| P1 | L7 explain + sensitivity | Phase B | Open |
-| P1 | L1 attribute→proposal / `rate` | Phase C | Open |
+| P1 | L7 explain + sensitivity | Phase B | **Done** (2026-09-16): `ahp explain`, `ahp sensitivity` (+ MCP / report section / `output/sensitivity.json`) |
+| P1 | L1 attribute→proposal / `rate` | Phase C | **Done** (partial): `ahp rate` / `pair suggest-from-attributes` → proposals only; absolute-measurement synthesis still open |
 | P2 | L3 batch import / bulk propose | Phase A stretch / D import | Open |
 | P2 | L2 constraints from attributes | Phase B checklist / doctor | Open |
 | P3 | L8 evidence trail; L10 park criterion; L11 apply quiet | UX polish | Open |

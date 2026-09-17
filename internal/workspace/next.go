@@ -124,20 +124,20 @@ func RecommendNext(s *StatusSummary) NextAction {
 			Kind:    "ready",
 			Command: "ahp open",
 			Reason:  "workspace ready — open the HTML report",
-			Hints: []NextHint{{
-				Command: "ahp compute",
-				Reason:  "re-solve and refresh outputs",
-			}},
+			Hints: []NextHint{
+				{Command: "ahp explain", Reason: "criterion contribution breakdown"},
+				{Command: "ahp sensitivity", Reason: "±δ robustness / rank-reversal"},
+			},
 		}
 	default:
 		return NextAction{
 			Kind:    "ready",
 			Command: "ahp compute",
 			Reason:  "workspace ready — solve and write outputs",
-			Hints: []NextHint{{
-				Command: "ahp open",
-				Reason:  "recompute and print report.html path",
-			}},
+			Hints: []NextHint{
+				{Command: "ahp explain", Reason: "criterion contribution breakdown"},
+				{Command: "ahp sensitivity", Reason: "±δ robustness / rank-reversal"},
+			},
 		}
 	}
 }

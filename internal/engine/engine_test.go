@@ -75,6 +75,100 @@ func TestParseSaaty(t *testing.T) {
 	}
 }
 
+func TestExplainContributions(t *testing.T) {
+	leaf := map[string]float64{"cost": 0.6, "quality": 0.4}
+	local := map[string]map[string]float64{
+		"cost":    {"x": 0.7, "y": 0.3},
+		"quality": {"x": 0.2, "y": 0.8},
+	}
+	exp := Explain(leaf, local, []string{"x", "y"},
+		map[string]string{"x": "X", "y": "Y"},
+		map[string]string{"cost": "Cost", "quality": "Quality"})
+	if len(exp.Alternatives) != 2 {
+		t.Fatalf("alts=%d", len(exp.Alternatives))
+	}
+	x := exp.Alternatives[0]
+	if x.ID != "x" || x.Rank != 1 {
+		t.Fatalf("expected x rank1 got %+v", x)
+	}
+	approx(t, x.GlobalWeight, 0.6*0.7+0.4*0.2)
+	if len(x.Contributions) != 2 {
+		t.Fatalf("contributions=%d", len(x.Contributions))
+	}
+	approx(t, x.Contributions[0].Contribution, 0.6*0.7) // cost dominates for x
+	approx(t, x.Contributions[0].Contribution+x.Contributions[1].Contribution, x.GlobalWeight)
+}
+
+func TestAdjustLeafWeightRenormalizes(t *testing.T) {
+	w := map[string]float64{"a": 0.5, "b": 0.3, "c": 0.2}
+	adj := AdjustLeafWeight(w, "a", 0.7)
+	approx(t, adj["a"], 0.7)
+	sum := adj["a"] + adj["b"] + adj["c"]
+	approx(t, sum, 1)
+	approx(t, adj["b"]/adj["c"], 0.3/0.2)
+}
+
+func TestSensitivityTornadoAndFlip(t *testing.T) {
+	// isolation-heavy like the headphone dogfood: flip when isolation softens.
+	leaf := map[string]float64{"isolation": 0.5, "value": 0.3, "comfort": 0.2}
+	local := map[string]map[string]float64{
+		"isolation": {"closed": 0.7, "open": 0.3},
+		"value":     {"closed": 0.3, "open": 0.7},
+		"comfort":   {"closed": 0.4, "open": 0.6},
+	}
+	alts := []string{"closed", "open"}
+	names := map[string]string{"closed": "Closed", "open": "Open"}
+	sens := Sensitivity(leaf, local, alts, names, nil, 0.20)
+	if sens.BaseLeaderID != "closed" {
+		t.Fatalf("leader=%s", sens.BaseLeaderID)
+	}
+	if len(sens.ByCriterion) != 3 {
+		t.Fatalf("criteria=%d", len(sens.ByCriterion))
+	}
+	// Largest tornado should involve isolation or value (discrimination).
+	if sens.ByCriterion[0].TornadoEffect < sens.ByCriterion[2].TornadoEffect {
+		t.Fatalf("tornado not sorted: %+v", sens.ByCriterion)
+	}
+	var iso *CriterionSensitivity
+	for i := range sens.ByCriterion {
+		if sens.ByCriterion[i].CriterionID == "isolation" {
+			iso = &sens.ByCriterion[i]
+			break
+		}
+	}
+	if iso == nil {
+		t.Fatal("missing isolation")
+	}
+	if iso.ReversalDelta == nil {
+		t.Fatalf("expected isolation reversal, note=%s", iso.ReversalNote)
+	}
+}
+
+func TestSuggestPairwiseFromValuesLowerBetter(t *testing.T) {
+	ids := []string{"cheap", "mid", "pricey"}
+	vals := map[string]float64{"cheap": 100, "mid": 200, "pricey": 400}
+	sug, err := SuggestPairwiseFromValues(ids, vals, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(sug) != 3 {
+		t.Fatalf("pairs=%d", len(sug))
+	}
+	by := map[string]AttrPairSuggestion{}
+	for _, s := range sug {
+		by[s.Left+"|"+s.Right] = s
+	}
+	// cheap vs pricey: 400/100=4 → Saaty 4 (cheap preferred)
+	cp := by["cheap|pricey"]
+	if cp.Value != 4 {
+		t.Fatalf("cheap|pricey=%v label=%s", cp.Value, cp.ValueLabel)
+	}
+	// mid vs pricey: 400/200=2 → 2
+	if by["mid|pricey"].Value != 2 {
+		t.Fatalf("mid|pricey=%v", by["mid|pricey"].Value)
+	}
+}
+
 func approx(t *testing.T, got, want float64) {
 	t.Helper()
 	if math.Abs(got-want) > 1e-5*math.Max(1, math.Abs(want)) {

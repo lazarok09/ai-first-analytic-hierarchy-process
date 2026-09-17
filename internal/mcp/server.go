@@ -26,7 +26,8 @@ Rules:
 - Humans commit by editing CSV status or calling commit_proposals / commit_pairwise.
 - After structure or judgment changes, call compute then read the HTML/CSV outputs.
 - Prefer missing_pairs and workspace_status before filling matrices.
-- If CR > 0.10, call suggest_repairs and propose revised values (still as proposals).`
+- If CR > 0.10, call suggest_repairs and propose revised values (still as proposals).
+- Use explain / sensitivity for close rankings. Use suggest_from_attributes to turn numeric attributes into proposal judgments (never commits).`
 
 func Run() error {
 	s := server.NewMCPServer("ahp-method", "0.3.0",
@@ -299,6 +300,67 @@ func Run() error {
 		}, nil
 	}))
 
+	s.AddTool(mcp.NewTool("explain",
+		mcp.WithDescription("Break down alternative global weights into criterion contributions."),
+		mcp.WithString("workspace"),
+		mcp.WithString("alternative_id", mcp.Description("Optional alternative id filter")),
+		mcp.WithBoolean("include_proposals"),
+	), wrap(func(args map[string]any) (any, error) {
+		ws, err := open(args)
+		if err != nil {
+			return nil, err
+		}
+		return ws.Explain(boolArg(args, "include_proposals"), strArg(args, "alternative_id", ""))
+	}))
+
+	s.AddTool(mcp.NewTool("sensitivity",
+		mcp.WithDescription("One-at-a-time leaf-weight sensitivity (±delta). Writes output/sensitivity.json."),
+		mcp.WithString("workspace"),
+		mcp.WithNumber("delta", mcp.Description("Absolute weight perturbation (default 0.05)")),
+		mcp.WithBoolean("include_proposals"),
+	), wrap(func(args map[string]any) (any, error) {
+		ws, err := open(args)
+		if err != nil {
+			return nil, err
+		}
+		delta := floatArg(args, "delta", 0.05)
+		sens, err := ws.Sensitivity(boolArg(args, "include_proposals"), delta)
+		if err != nil {
+			return nil, err
+		}
+		if err := os.MkdirAll(ws.OutputDir(), 0o755); err != nil {
+			return nil, err
+		}
+		path := ws.OutputDir() + "/sensitivity.json"
+		b, err := json.MarshalIndent(sens, "", "  ")
+		if err != nil {
+			return nil, err
+		}
+		if err := os.WriteFile(path, b, 0o644); err != nil {
+			return nil, err
+		}
+		return map[string]any{"result": sens, "sensitivity_json": path}, nil
+	}))
+
+	s.AddTool(mcp.NewTool("suggest_from_attributes",
+		mcp.WithDescription("Convert numeric attributes under a criterion into Saaty pairwise proposals (never commits)."),
+		mcp.WithString("criterion_id", mcp.Required()),
+		mcp.WithString("prefer", mcp.Description("higher|lower"), mcp.DefaultString("higher")),
+		mcp.WithBoolean("dry_run"),
+		mcp.WithString("workspace"),
+	), wrap(func(args map[string]any) (any, error) {
+		ws, err := open(args)
+		if err != nil {
+			return nil, err
+		}
+		prefer := engine.PreferDirection(strArg(args, "prefer", "higher"))
+		return ws.SuggestFromAttributes(workspace.SuggestFromAttributesOptions{
+			CriterionID: strArg(args, "criterion_id", ""),
+			Prefer:      prefer,
+			DryRun:      boolArg(args, "dry_run"),
+		})
+	}))
+
 	s.AddTool(mcp.NewTool("render_report",
 		mcp.WithDescription("Compute and return the HTML report path for humans to open."),
 		mcp.WithString("workspace"),
@@ -410,5 +472,39 @@ func boolArg(args map[string]any, key string) bool {
 		return t == "true" || t == "1"
 	default:
 		return false
+	}
+}
+
+func floatArg(args map[string]any, key string, def float64) float64 {
+	if args == nil {
+		return def
+	}
+	v, ok := args[key]
+	if !ok || v == nil {
+		return def
+	}
+	switch t := v.(type) {
+	case float64:
+		return t
+	case float32:
+		return float64(t)
+	case int:
+		return float64(t)
+	case int64:
+		return float64(t)
+	case json.Number:
+		f, err := t.Float64()
+		if err != nil {
+			return def
+		}
+		return f
+	case string:
+		var f float64
+		if _, err := fmt.Sscanf(t, "%f", &f); err == nil {
+			return f
+		}
+		return def
+	default:
+		return def
 	}
 }

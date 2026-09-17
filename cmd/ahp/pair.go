@@ -18,14 +18,18 @@ func cmdPair() *cobra.Command {
 		Short: "Judgment UX: missing pairs, set, repairs, interactive ask",
 		Long: `Work with Saaty pairwise judgments.
 
-  ahp pair missing   list gaps
-  ahp pair set       write one judgment (--as proposal|committed)
-  ahp pair repairs   CR repair suggestions
-  ahp pair ask       interactive walk over missing pairs (TTY only)
+  ahp pair missing                  list gaps
+  ahp pair set                      write one judgment (--as proposal|committed)
+  ahp pair repairs                  CR repair suggestions
+  ahp pair ask                      interactive walk over missing pairs (TTY only)
+  ahp pair suggest-from-attributes  numeric attributes → Saaty proposals
 
 Agents / non-TTY default --as proposal (also AHP_AGENT=1).`,
 	}
-	c.AddCommand(cmdPairMissing(), cmdPairSet(), cmdPairRepairs(), cmdPairAsk())
+	c.AddCommand(
+		cmdPairMissing(), cmdPairSet(), cmdPairRepairs(), cmdPairAsk(),
+		cmdPairSuggestFromAttributes(),
+	)
 	return c
 }
 

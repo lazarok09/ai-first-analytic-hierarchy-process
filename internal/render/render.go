@@ -57,7 +57,7 @@ td.num,th.num{text-align:right}.bar{height:10px;background:#ece7dc}.bar>span{dis
 	}
 	b.WriteString(`</div>
 <nav class="toc" style="margin-top:1rem">
-<a href="#method">Method</a><a href="#ranking">Ranking</a><a href="#weights">Weights</a>
+<a href="#method">Method</a><a href="#ranking">Ranking</a><a href="#explain">Explain</a><a href="#weights">Weights</a>
 <a href="#repairs">CR repairs</a><a href="#matrices">Matrices</a><a href="#data">CSV data</a>
 </nav></header><main>`)
 
@@ -84,6 +84,23 @@ td.num,th.num{text-align:right}.bar{height:10px;background:#ece7dc}.bar>span{dis
 				r.Rank, html.EscapeString(r.Name), r.Weight, r.Weight*100)
 		}
 		b.WriteString(`</tbody></table>`)
+	}
+
+	// Contribution breakdown (Phase B explain).
+	if len(result.Ranking) > 0 && len(result.LeafWeights) > 0 {
+		leaf, local, altIDs, altNames, critNames := explainInputs(result)
+		exp := engine.Explain(leaf, local, altIDs, altNames, critNames)
+		b.WriteString(`</section><section id="explain"><h2>Contribution breakdown</h2>
+<p class="muted">Each global weight is the sum of criterion_weight × local_weight. Use <code>ahp explain</code> / <code>ahp sensitivity</code> for terminal analysis.</p>`)
+		for _, a := range exp.Alternatives {
+			fmt.Fprintf(&b, `<h3>#%d %s — %.4f</h3>`, a.Rank, html.EscapeString(a.Name), a.GlobalWeight)
+			b.WriteString(`<table><thead><tr><th>Criterion</th><th class="num">Crit wt</th><th class="num">Local</th><th class="num">Contribution</th><th>Share</th></tr></thead><tbody>`)
+			for _, c := range a.Contributions {
+				fmt.Fprintf(&b, `<tr><td>%s</td><td class="num">%.3f</td><td class="num">%.3f</td><td class="num">%.4f</td><td><div class="bar"><span style="width:%.1f%%"></span></div></td></tr>`,
+					html.EscapeString(c.CriterionName), c.CriterionWeight, c.LocalWeight, c.Contribution, c.Share*100)
+			}
+			b.WriteString(`</tbody></table>`)
+		}
 	}
 
 	b.WriteString(`</section><section id="weights"><h2>Weights by matrix</h2>`)
@@ -238,4 +255,36 @@ func attrRows(items []workspace.AttributeRow) []map[string]string {
 		})
 	}
 	return out
+}
+
+func explainInputs(result *workspace.ComputeResult) (
+	leaf map[string]float64,
+	local map[string]map[string]float64,
+	altIDs []string,
+	altNames, critNames map[string]string,
+) {
+	leaf = result.LeafWeights
+	if leaf == nil {
+		leaf = map[string]float64{}
+	}
+	local = map[string]map[string]float64{}
+	for cid := range leaf {
+		key := "alt:" + cid
+		if m, ok := result.Matrices[key]; ok {
+			local[cid] = m.Weights
+		} else {
+			local[cid] = map[string]float64{}
+		}
+	}
+	altNames = map[string]string{}
+	altIDs = make([]string, 0, len(result.Alternatives))
+	for _, a := range result.Alternatives {
+		altIDs = append(altIDs, a.ID)
+		altNames[a.ID] = a.Name
+	}
+	critNames = map[string]string{}
+	for _, c := range result.Criteria {
+		critNames[c.ID] = c.Name
+	}
+	return leaf, local, altIDs, altNames, critNames
 }
