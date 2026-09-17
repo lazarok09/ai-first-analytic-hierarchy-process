@@ -1,0 +1,401 @@
+package workspace
+
+import (
+	"fmt"
+	"os"
+	"sort"
+	"strings"
+
+	"github.com/lazarok/ahp-method/internal/cliout"
+	"github.com/lazarok/ahp-method/internal/engine"
+)
+
+// Finding is one actionable doctor diagnostic.
+type Finding struct {
+	Code     string `json:"code"`
+	Severity string `json:"severity"` // error | warn | info
+	Message  string `json:"message"`
+	Fix      string `json:"fix,omitempty"`
+	Matrix   string `json:"matrix,omitempty"`
+	Left     string `json:"left,omitempty"`
+	Right    string `json:"right,omitempty"`
+}
+
+// DoctorOptions controls which judgments are included and whether pending
+// proposals fail the run (--strict).
+type DoctorOptions struct {
+	IncludeProposals bool
+	Strict           bool
+}
+
+// DoctorReport is the structured result of Doctor / validate.
+type DoctorReport struct {
+	Workspace  string    `json:"workspace"`
+	Title      string    `json:"title"`
+	OK         bool      `json:"ok"`
+	Complete   bool      `json:"complete"`
+	Consistent bool      `json:"consistent"`
+	Proposals  int       `json:"proposals"`
+	ExitCode   int       `json:"exit_code"`
+	Findings   []Finding `json:"findings"`
+}
+
+// Doctor runs schema, graph, and CR diagnostics. ExitCode follows the
+// ROADMAP contract: incomplete (2) beats inconsistent (3); proposals
+// pending only yield 4 when Strict and the workspace is otherwise ready.
+func (w *Workspace) Doctor(opts DoctorOptions) (*DoctorReport, error) {
+	report := &DoctorReport{
+		Workspace: w.Root,
+		Findings:  make([]Finding, 0),
+	}
+
+	if _, err := os.Stat(w.TomlPath()); err != nil {
+		if os.IsNotExist(err) {
+			report.Findings = append(report.Findings, Finding{
+				Code:     "missing_toml",
+				Severity: "error",
+				Message:  fmt.Sprintf("missing ahp.toml under %s", w.Root),
+				Fix:      "ahp init",
+			})
+			report.ExitCode = cliout.ExitIncomplete
+			return report, nil
+		}
+		return nil, err
+	}
+
+	meta, err := w.LoadMeta()
+	if err != nil {
+		return nil, err
+	}
+	report.Title = meta.Title
+
+	for _, name := range []string{"criteria.csv", "alternatives.csv", "pairwise.csv", "attributes.csv"} {
+		path := w.dataPath(name)
+		if _, err := os.Stat(path); err != nil {
+			if os.IsNotExist(err) {
+				report.Findings = append(report.Findings, Finding{
+					Code:     "missing_data_file",
+					Severity: "error",
+					Message:  fmt.Sprintf("missing data/%s", name),
+					Fix:      "ahp init",
+				})
+				continue
+			}
+			return nil, err
+		}
+	}
+
+	criteria, err := w.Criteria()
+	if err != nil {
+		return nil, err
+	}
+	alternatives, err := w.Alternatives()
+	if err != nil {
+		return nil, err
+	}
+	pairwise, err := w.Pairwise()
+	if err != nil {
+		return nil, err
+	}
+	attributes, err := w.Attributes()
+	if err != nil {
+		return nil, err
+	}
+
+	critIDs := map[string]struct{}{}
+	for _, c := range criteria {
+		critIDs[c.ID] = struct{}{}
+	}
+	altIDs := map[string]struct{}{}
+	for _, a := range alternatives {
+		altIDs[a.ID] = struct{}{}
+	}
+
+	if len(criteria) == 0 {
+		report.Findings = append(report.Findings, Finding{
+			Code:     "no_criteria",
+			Severity: "error",
+			Message:  "no criteria defined",
+			Fix:      "ahp add-criterion <id> <name>",
+		})
+	}
+	if len(alternatives) == 0 {
+		report.Findings = append(report.Findings, Finding{
+			Code:     "no_alternatives",
+			Severity: "error",
+			Message:  "no alternatives defined",
+			Fix:      "ahp add-alternative <id> <name>",
+		})
+	}
+
+	// Orphan parent_id / unknown schema refs.
+	for _, c := range criteria {
+		if c.ParentID == "" {
+			continue
+		}
+		if _, ok := critIDs[c.ParentID]; !ok {
+			report.Findings = append(report.Findings, Finding{
+				Code:     "orphan_parent",
+				Severity: "error",
+				Message:  fmt.Sprintf("criterion %q has unknown parent_id %q", c.ID, c.ParentID),
+				Fix:      "ahp add-criterion " + c.ParentID + " <name>",
+			})
+		}
+	}
+
+	proposals := 0
+	for _, p := range pairwise {
+		if p.Status == "proposal" {
+			proposals++
+		}
+		report.Findings = append(report.Findings, pairwiseIDFindings(p, critIDs, altIDs)...)
+	}
+	report.Proposals = proposals
+
+	for _, a := range attributes {
+		if _, ok := altIDs[a.AlternativeID]; !ok {
+			report.Findings = append(report.Findings, Finding{
+				Code:     "unknown_attribute_alt",
+				Severity: "error",
+				Message:  fmt.Sprintf("attributes: unknown alternative_id %q", a.AlternativeID),
+				Fix:      "ahp add-alternative " + a.AlternativeID + " <name>",
+			})
+		}
+		if _, ok := critIDs[a.CriterionID]; !ok {
+			report.Findings = append(report.Findings, Finding{
+				Code:     "unknown_attribute_crit",
+				Severity: "error",
+				Message:  fmt.Sprintf("attributes: unknown criterion_id %q", a.CriterionID),
+				Fix:      "ahp add-criterion " + a.CriterionID + " <name>",
+			})
+		}
+	}
+
+	result, err := w.Compute(opts.IncludeProposals)
+	if err != nil {
+		return nil, err
+	}
+	report.Complete = result.Complete
+	report.Consistent = result.Consistent
+
+	// If committed-only view is incomplete but proposals alone would complete the
+	// workspace, treat gaps as proposals_pending (not empty/missing errors).
+	filledByProposals := false
+	if proposals > 0 && !opts.IncludeProposals && !result.Complete {
+		if withProp, err := w.Compute(true); err == nil && withProp.Complete {
+			filledByProposals = true
+		}
+	}
+
+	// Missing pairs / empty matrices (skip when proposals would fill the gaps).
+	if !filledByProposals {
+		for key, m := range result.Matrices {
+			if len(m.IDs) < 2 || len(m.Missing) == 0 {
+				continue
+			}
+			allMissing := len(m.Missing) == len(engine.OrderedPairs(m.IDs))
+			if allMissing {
+				report.Findings = append(report.Findings, Finding{
+					Code:     "empty_matrix",
+					Severity: "error",
+					Message:  fmt.Sprintf("matrix %s has no pairwise judgments (%d pairs needed)", key, len(m.Missing)),
+					Fix:      fmt.Sprintf("ahp set-pairwise %s <left> <right> <value>", key),
+					Matrix:   key,
+				})
+				continue
+			}
+			for _, p := range m.Missing {
+				left, right := p["left"], p["right"]
+				report.Findings = append(report.Findings, Finding{
+					Code:     "missing_pair",
+					Severity: "error",
+					Message:  fmt.Sprintf("missing pair in %s: %s vs %s", key, left, right),
+					Fix:      fmt.Sprintf("ahp set-pairwise %s %s %s <saaty-value>", key, left, right),
+					Matrix:   key,
+					Left:     left,
+					Right:    right,
+				})
+			}
+		}
+	}
+
+	// CR hotspots (only for complete matrices).
+	for key, m := range result.Matrices {
+		if !m.Complete || m.CR == nil || *m.CR <= engine.CRAccept {
+			continue
+		}
+		report.Findings = append(report.Findings, Finding{
+			Code:     "cr_hotspot",
+			Severity: "error",
+			Message:  fmt.Sprintf("matrix %s CR=%.3f exceeds 0.10", key, *m.CR),
+			Fix:      "ahp status  # or set-pairwise with repair suggestions below",
+			Matrix:   key,
+		})
+		for _, h := range m.Repairs {
+			report.Findings = append(report.Findings, Finding{
+				Code:     "cr_repair",
+				Severity: "warn",
+				Message: fmt.Sprintf("repair %s: %s vs %s %s → %s",
+					key, h.Left, h.Right, engine.FormatSaaty(h.Current), engine.FormatSaaty(h.Suggested)),
+				Fix: fmt.Sprintf("ahp set-pairwise %s %s %s %s",
+					key, h.Left, h.Right, engine.FormatSaaty(h.Suggested)),
+				Matrix: key,
+				Left:   h.Left,
+				Right:  h.Right,
+			})
+		}
+	}
+
+	if proposals > 0 {
+		sev := "info"
+		if opts.Strict {
+			sev = "warn"
+		}
+		report.Findings = append(report.Findings, Finding{
+			Code:     "proposals_pending",
+			Severity: sev,
+			Message:  fmt.Sprintf("%d proposal judgment(s) pending", proposals),
+			Fix:      "ahp commit-proposals",
+		})
+	}
+
+	sort.SliceStable(report.Findings, func(i, j int) bool {
+		return findingRank(report.Findings[i]) < findingRank(report.Findings[j]) ||
+			(findingRank(report.Findings[i]) == findingRank(report.Findings[j]) &&
+				report.Findings[i].Message < report.Findings[j].Message)
+	})
+
+	incomplete := hasCode(report.Findings, "missing_toml", "missing_data_file", "no_criteria", "no_alternatives",
+		"orphan_parent", "unknown_pairwise_id", "unknown_matrix", "unknown_attribute_alt", "unknown_attribute_crit",
+		"empty_matrix", "missing_pair") || (!result.Complete && !filledByProposals)
+	inconsistent := hasCode(report.Findings, "cr_hotspot") || (result.Complete && !result.Consistent)
+
+	if incomplete {
+		report.Complete = false
+	}
+	if filledByProposals {
+		// Committed view is gappy, but proposals would complete — surface readiness honestly.
+		report.Complete = false
+	}
+
+	switch {
+	case incomplete:
+		report.ExitCode = cliout.ExitIncomplete
+	case inconsistent:
+		report.ExitCode = cliout.ExitInconsistent
+	case opts.Strict && proposals > 0:
+		report.ExitCode = cliout.ExitProposals
+	default:
+		report.ExitCode = cliout.ExitOK
+	}
+	report.OK = report.ExitCode == cliout.ExitOK
+	return report, nil
+}
+
+// ValidateGraph is an alias for Doctor without strict proposal failure.
+func (w *Workspace) ValidateGraph(includeProposals bool) (*DoctorReport, error) {
+	return w.Doctor(DoctorOptions{IncludeProposals: includeProposals})
+}
+
+func pairwiseIDFindings(p PairwiseRow, critIDs, altIDs map[string]struct{}) []Finding {
+	var out []Finding
+	matrix := p.Matrix
+	switch {
+	case matrix == "criteria":
+		for _, id := range []string{p.Left, p.Right} {
+			if _, ok := critIDs[id]; !ok {
+				out = append(out, Finding{
+					Code:     "unknown_pairwise_id",
+					Severity: "error",
+					Message:  fmt.Sprintf("pairwise criteria: unknown id %q", id),
+					Fix:      "ahp add-criterion " + id + " <name>",
+					Matrix:   matrix,
+					Left:     p.Left,
+					Right:    p.Right,
+				})
+			}
+		}
+	case strings.HasPrefix(matrix, "criteria:"):
+		parent := strings.TrimPrefix(matrix, "criteria:")
+		if _, ok := critIDs[parent]; !ok {
+			out = append(out, Finding{
+				Code:     "unknown_matrix",
+				Severity: "error",
+				Message:  fmt.Sprintf("pairwise matrix %q references unknown criterion %q", matrix, parent),
+				Fix:      "ahp add-criterion " + parent + " <name>",
+				Matrix:   matrix,
+			})
+		}
+		for _, id := range []string{p.Left, p.Right} {
+			if _, ok := critIDs[id]; !ok {
+				out = append(out, Finding{
+					Code:     "unknown_pairwise_id",
+					Severity: "error",
+					Message:  fmt.Sprintf("pairwise %s: unknown id %q", matrix, id),
+					Fix:      "ahp add-criterion " + id + " <name>",
+					Matrix:   matrix,
+					Left:     p.Left,
+					Right:    p.Right,
+				})
+			}
+		}
+	case strings.HasPrefix(matrix, "alt:"):
+		crit := strings.TrimPrefix(matrix, "alt:")
+		if _, ok := critIDs[crit]; !ok {
+			out = append(out, Finding{
+				Code:     "unknown_matrix",
+				Severity: "error",
+				Message:  fmt.Sprintf("pairwise matrix %q references unknown criterion %q", matrix, crit),
+				Fix:      "ahp add-criterion " + crit + " <name>",
+				Matrix:   matrix,
+			})
+		}
+		for _, id := range []string{p.Left, p.Right} {
+			if _, ok := altIDs[id]; !ok {
+				out = append(out, Finding{
+					Code:     "unknown_pairwise_id",
+					Severity: "error",
+					Message:  fmt.Sprintf("pairwise %s: unknown alternative id %q", matrix, id),
+					Fix:      "ahp add-alternative " + id + " <name>",
+					Matrix:   matrix,
+					Left:     p.Left,
+					Right:    p.Right,
+				})
+			}
+		}
+	default:
+		out = append(out, Finding{
+			Code:     "unknown_matrix",
+			Severity: "error",
+			Message:  fmt.Sprintf("pairwise matrix %q is not criteria, criteria:<id>, or alt:<id>", matrix),
+			Matrix:   matrix,
+			Left:     p.Left,
+			Right:    p.Right,
+		})
+	}
+	return out
+}
+
+func hasCode(findings []Finding, codes ...string) bool {
+	set := map[string]struct{}{}
+	for _, c := range codes {
+		set[c] = struct{}{}
+	}
+	for _, f := range findings {
+		if _, ok := set[f.Code]; ok {
+			return true
+		}
+	}
+	return false
+}
+
+func findingRank(f Finding) int {
+	switch f.Severity {
+	case "error":
+		return 0
+	case "warn":
+		return 1
+	default:
+		return 2
+	}
+}

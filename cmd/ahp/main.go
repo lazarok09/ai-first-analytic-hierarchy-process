@@ -1,10 +1,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 
+	"github.com/lazarok/ahp-method/internal/cliout"
 	"github.com/lazarok/ahp-method/internal/engine"
 	ahpmcp "github.com/lazarok/ahp-method/internal/mcp"
 	"github.com/lazarok/ahp-method/internal/render"
@@ -19,13 +21,17 @@ func main() {
 		Use:   "ahp",
 		Short: "Analytic Hierarchy Process CLI: CSV workspace, math, HTML report, MCP",
 	}
+	root.PersistentFlags().Bool("json", false, "Machine-readable JSON output (default when stdout is not a TTY)")
 	root.AddCommand(
 		cmdVersion(),
 		cmdInit(),
 		cmdCompute(),
 		cmdRender(),
+		cmdDoctor(),
 		cmdValidate(),
 		cmdStatus(),
+		cmdTree(),
+		cmdNext(),
 		cmdOpen(),
 		cmdCommitProposals(),
 		cmdSetGoal(),
@@ -36,7 +42,11 @@ func main() {
 		cmdMCP(),
 	)
 	if err := root.Execute(); err != nil {
-		os.Exit(1)
+		var ee *cliout.ExitError
+		if !(errors.As(err, &ee) && ee != nil && ee.Err == nil) {
+			fmt.Fprintln(os.Stderr, err)
+		}
+		os.Exit(cliout.Code(err))
 	}
 }
 
@@ -147,85 +157,6 @@ func cmdRender() *cobra.Command {
 		Use:   "render",
 		Short: "Recompute and write output/report.html",
 		RunE:  cmdCompute().RunE,
-	}
-	addWorkspaceFlag(c)
-	addIncludeFlag(c)
-	return c
-}
-
-func cmdValidate() *cobra.Command {
-	c := &cobra.Command{
-		Use:   "validate",
-		Short: "Print missing pairs, CR warnings, repair hints",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			include, _ := cmd.Flags().GetBool("include-proposals")
-			ws, err := openWS(wsFlag(cmd))
-			if err != nil {
-				return err
-			}
-			result, err := ws.Compute(include)
-			if err != nil {
-				return err
-			}
-			for _, w := range result.Warnings {
-				fmt.Println(w)
-			}
-			bad := false
-			for key, m := range result.Matrices {
-				for _, p := range m.Missing {
-					bad = true
-					fmt.Printf("missing %s: %s vs %s\n", key, p["left"], p["right"])
-				}
-				for _, h := range m.Repairs {
-					fmt.Printf("repair %s: %s vs %s %s → %s\n",
-						key, h.Left, h.Right, engine.FormatSaaty(h.Current), engine.FormatSaaty(h.Suggested))
-				}
-			}
-			if bad || !result.Consistent {
-				return fmt.Errorf("workspace incomplete or inconsistent")
-			}
-			return nil
-		},
-	}
-	addWorkspaceFlag(c)
-	addIncludeFlag(c)
-	return c
-}
-
-func cmdStatus() *cobra.Command {
-	c := &cobra.Command{
-		Use:   "status",
-		Short: "Summarize workspace completeness, proposals, CR repairs, ranking",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			include, _ := cmd.Flags().GetBool("include-proposals")
-			ws, err := openWS(wsFlag(cmd))
-			if err != nil {
-				return err
-			}
-			s, err := ws.Status(include)
-			if err != nil {
-				return err
-			}
-			fmt.Printf("%s  (%s)\n", s.Title, s.Workspace)
-			fmt.Printf("criteria=%d alternatives=%d attributes=%d committed=%d proposals=%d\n",
-				s.Criteria, s.Alternatives, s.Attributes, s.PairwiseCommitted, s.PairwiseProposals)
-			fmt.Printf("complete=%v consistent=%v\n", s.Complete, s.Consistent)
-			for _, w := range s.Warnings {
-				fmt.Println("warning:", w)
-			}
-			for _, p := range s.Missing {
-				fmt.Printf("missing %s: %s vs %s\n", p.Matrix, p.Left, p.Right)
-			}
-			for _, h := range s.Repairs {
-				fmt.Printf("repair %s: %s vs %s %s → %s\n",
-					h.Matrix, h.Left, h.Right, engine.FormatSaaty(h.Current), engine.FormatSaaty(h.Suggested))
-			}
-			for _, r := range s.Ranking {
-				fmt.Printf("%d. %s  %.4f\n", r.Rank, r.Name, r.Weight)
-			}
-			fmt.Println("report:", s.ReportHTML)
-			return nil
-		},
 	}
 	addWorkspaceFlag(c)
 	addIncludeFlag(c)

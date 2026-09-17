@@ -106,20 +106,24 @@ type ComputeResult struct {
 }
 
 type StatusSummary struct {
-	Workspace          string       `json:"workspace"`
-	Title              string       `json:"title"`
-	Criteria           int          `json:"criteria"`
-	Alternatives       int          `json:"alternatives"`
-	Attributes         int          `json:"attributes"`
-	PairwiseCommitted  int          `json:"pairwise_committed"`
-	PairwiseProposals  int          `json:"pairwise_proposals"`
-	Complete           bool         `json:"complete"`
-	Consistent         bool         `json:"consistent"`
-	Missing            []MissingPair `json:"missing"`
-	Repairs            []RepairRow  `json:"repairs"`
-	Ranking            []RankRow    `json:"ranking"`
-	Warnings           []string     `json:"warnings"`
-	ReportHTML         string       `json:"report_html"`
+	Workspace         string        `json:"workspace"`
+	Title             string        `json:"title"`
+	Criteria          int           `json:"criteria"`
+	Alternatives      int           `json:"alternatives"`
+	Attributes        int           `json:"attributes"`
+	PairwiseCommitted int           `json:"pairwise_committed"`
+	PairwiseProposals int           `json:"pairwise_proposals"`
+	Complete          bool          `json:"complete"`
+	Consistent        bool          `json:"consistent"`
+	Missing           []MissingPair `json:"missing"`
+	Repairs           []RepairRow   `json:"repairs"`
+	Ranking           []RankRow     `json:"ranking"`
+	Warnings          []string      `json:"warnings"`
+	ReportHTML        string        `json:"report_html"`
+	// Next is the single recommended follow-up (status v2 / agents).
+	Next NextAction `json:"next"`
+	// ExitCode is the readiness code for `ahp status --check` (0/2/3/4).
+	ExitCode int `json:"exit_code"`
 }
 
 type Workspace struct {
@@ -667,7 +671,7 @@ func (w *Workspace) Status(includeProposals bool) (*StatusSummary, error) {
 			repairs = append(repairs, h)
 		}
 	}
-	return &StatusSummary{
+	s := &StatusSummary{
 		Workspace: w.Root, Title: result.Title,
 		Criteria: len(result.Criteria), Alternatives: len(result.Alternatives),
 		Attributes: len(result.Attributes),
@@ -675,7 +679,10 @@ func (w *Workspace) Status(includeProposals bool) (*StatusSummary, error) {
 		Complete: result.Complete, Consistent: result.Consistent,
 		Missing: missing, Repairs: repairs, Ranking: result.Ranking,
 		Warnings: result.Warnings, ReportHTML: filepath.Join(w.OutputDir(), "report.html"),
-	}, nil
+	}
+	s.Next = NextActionFromStatus(s)
+	s.ExitCode = ReadinessExit(s)
+	return s, nil
 }
 
 func matrixPayload(r engine.MatrixResult, names map[string]string) MatrixPayload {
