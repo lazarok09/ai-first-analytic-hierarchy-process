@@ -1,5 +1,6 @@
 # Build artifacts
 bin/
+/ahp
 dist/
 
 # Local env (never commit secrets)
