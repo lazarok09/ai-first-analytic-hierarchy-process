@@ -50,6 +50,7 @@ func main() {
 		cmdAddAlternative(),
 		cmdSetPairwise(), // deprecated alias → pair set
 		cmdSetAttribute(),
+		cmdConstrain(),
 		cmdMCP(),
 	)
 	if err := root.Execute(); err != nil {

@@ -21,7 +21,8 @@ proposal judgments on matrix alt:C using ratio→nearest-Saaty mapping.
   --prefer lower   smaller attribute wins (price / risk weeks)
   --prefer higher  larger attribute wins (quality scores)
 
-Alias of: ahp pair suggest-from-attributes`,
+Use --refresh to demote committed pairs back to proposals when attributes change
+(never auto-commits). Alias of: ahp pair suggest-from-attributes`,
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		RunE:          runSuggestFromAttributes,
@@ -35,7 +36,8 @@ func cmdPairSuggestFromAttributes() *cobra.Command {
 		Use:   "suggest-from-attributes",
 		Short: "Propose alt pairwise from numeric attributes (never commits)",
 		Long: `Read attributes for --criterion and write status=proposal Saaty pairs
-on alt:<criterion>. Committed pairs are left untouched. Use --dry-run to preview.`,
+on alt:<criterion>. By default committed pairs are left untouched.
+Use --refresh to overwrite them as proposals (demote); --dry-run to preview.`,
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		RunE:          runSuggestFromAttributes,
@@ -49,6 +51,7 @@ func addSuggestFromAttributesFlags(c *cobra.Command) {
 	c.Flags().String("criterion", "", "Criterion id whose attributes to use (required)")
 	c.Flags().String("prefer", "higher", "higher|lower — which attribute direction wins")
 	c.Flags().Bool("dry-run", false, "Preview proposals without writing pairwise.csv")
+	c.Flags().Bool("refresh", false, "Rewrite matching pairs as proposals even if committed")
 	_ = c.MarkFlagRequired("criterion")
 }
 
@@ -56,6 +59,7 @@ func runSuggestFromAttributes(cmd *cobra.Command, args []string) error {
 	crit, _ := cmd.Flags().GetString("criterion")
 	preferRaw, _ := cmd.Flags().GetString("prefer")
 	dry, _ := cmd.Flags().GetBool("dry-run")
+	refresh, _ := cmd.Flags().GetBool("refresh")
 	p := cliout.FromCmd(cmd)
 	ws, err := openWS(wsFlag(cmd))
 	if err != nil {
@@ -66,6 +70,7 @@ func runSuggestFromAttributes(cmd *cobra.Command, args []string) error {
 		CriterionID: crit,
 		Prefer:      prefer,
 		DryRun:      dry,
+		Refresh:     refresh,
 	})
 	if err != nil {
 		return cliout.Wrap(cliout.ExitUsage, err)

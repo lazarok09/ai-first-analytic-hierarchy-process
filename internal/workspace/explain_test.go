@@ -73,6 +73,55 @@ func TestSuggestFromAttributesDryRun(t *testing.T) {
 	}
 }
 
+func TestSuggestFromAttributesRefreshDemotesCommitted(t *testing.T) {
+	dir := t.TempDir()
+	ws := Open(dir)
+	if err := ws.EnsureLayout(); err != nil {
+		t.Fatal(err)
+	}
+	if err := ws.SaveMeta(Meta{Title: "t"}); err != nil {
+		t.Fatal(err)
+	}
+	_ = ws.UpsertCriterion(Criterion{ID: "value", Name: "Value"})
+	_ = ws.UpsertAlternative(Alternative{ID: "a", Name: "A"})
+	_ = ws.UpsertAlternative(Alternative{ID: "b", Name: "B"})
+	_ = ws.UpsertAttribute(AttributeRow{AlternativeID: "a", CriterionID: "value", Value: "100", Unit: "BRL"})
+	_ = ws.UpsertAttribute(AttributeRow{AlternativeID: "b", CriterionID: "value", Value: "300", Unit: "BRL"})
+	_ = ws.UpsertPairwise(PairwiseRow{
+		Matrix: "alt:value", Left: "a", Right: "b", Value: 1, Status: "committed", Note: "stale",
+	})
+
+	skipped, err := ws.SuggestFromAttributes(SuggestFromAttributesOptions{
+		CriterionID: "value", Prefer: engine.PreferLower,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if skipped.Written != 0 || skipped.Skipped != 1 {
+		t.Fatalf("default must skip committed, got %+v", skipped)
+	}
+
+	refreshed, err := ws.SuggestFromAttributes(SuggestFromAttributesOptions{
+		CriterionID: "value", Prefer: engine.PreferLower, Refresh: true,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if refreshed.Written != 1 || refreshed.Skipped != 0 || refreshed.Refreshed != 1 {
+		t.Fatalf("refresh should demote committed→proposal, got %+v", refreshed)
+	}
+	pairs, err := ws.Pairwise()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(pairs) != 1 {
+		t.Fatalf("expected 1 pair, got %d", len(pairs))
+	}
+	if pairs[0].Status != "proposal" || pairs[0].Value != 3 {
+		t.Fatalf("expected proposal Saaty 3, got %+v", pairs[0])
+	}
+}
+
 func absF(v float64) float64 {
 	if v < 0 {
 		return -v

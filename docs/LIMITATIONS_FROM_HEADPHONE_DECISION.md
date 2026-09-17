@@ -146,10 +146,10 @@ What *did* work well: `init` → `status`/`next` → structure verbs → `pair s
 | P0 | L5 empty `complete=true`; L4 missing-vs-proposals messaging | Phase A polish | **Done** (2026-09-16): structure-aware `complete`, `proposals_fill_gaps` / coverage fields, `next`→`plan` |
 | P0 | L6 hide/label equal-weight ranking | Phase A / C incomplete flags | **Done**: `ranking_mode=equal_fallback\|ahp`; human status hides peek |
 | P1 | L7 explain + sensitivity | Phase B | **Done** (2026-09-16): `ahp explain`, `ahp sensitivity` (+ MCP / report section / `output/sensitivity.json`) |
-| P1 | L1 attribute→proposal / `rate` | Phase C | **Done** (partial): `ahp rate` / `pair suggest-from-attributes` → proposals only; absolute-measurement synthesis still open |
-| P2 | L3 batch import / bulk propose | Phase A stretch / D import | Open |
-| P2 | L2 constraints from attributes | Phase B checklist / doctor | Open |
-| P3 | L8 evidence trail; L10 park criterion; L11 apply quiet | UX polish | Open |
+| P1 | L1 attribute→proposal / `rate` | Phase C | **Done**: `ahp rate` / `pair suggest-from-attributes` → proposals; `--refresh` demotes committed; absolute-measurement synthesis still open |
+| P2 | L3 batch import / bulk propose | Phase A stretch / D import | **Done** (partial): `ahp pair import` CSV/JSON |
+| P2 | L2 constraints from attributes | Phase B checklist / doctor | **Done**: `ahp constrain` + synthesis exclusion + doctor |
+| P3 | L8 evidence trail; L10 park criterion; L11 apply quiet | UX polish | L11 **Done** (apply summary); L8/L10 open |
 | Out of core | L9 market discovery | Docs + CSV template only | Open |
 
 ---

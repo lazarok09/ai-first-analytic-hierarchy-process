@@ -113,8 +113,9 @@ type SuggestFromAttributesOptions struct {
 	CriterionID string
 	Prefer      engine.PreferDirection // higher | lower
 	DryRun      bool
-	// ReplaceExisting replaces existing proposal rows for the matrix; committed rows are never touched.
-	ReplaceExisting bool
+	// Refresh rewrites matching pairs as proposals even when a committed row
+	// already exists (demotes committed→proposal). Never writes status=committed.
+	Refresh bool
 }
 
 // SuggestFromAttributesResult lists proposed pairs derived from attributes.
@@ -124,8 +125,10 @@ type SuggestFromAttributesResult struct {
 	Matrix      string                      `json:"matrix"`
 	Prefer      string                      `json:"prefer"`
 	DryRun      bool                        `json:"dry_run"`
+	Refresh     bool                        `json:"refresh"`
 	Written     int                         `json:"written"`
 	Skipped     int                         `json:"skipped_committed"`
+	Refreshed   int                         `json:"refreshed"` // demoted committed→proposal (subset of Written)
 	Suggestions []engine.AttrPairSuggestion `json:"suggestions"`
 	Summary     string                      `json:"summary"`
 }
@@ -198,7 +201,7 @@ func (w *Workspace) SuggestFromAttributes(opts SuggestFromAttributesOptions) (*S
 	matrix := "alt:" + opts.CriterionID
 	out := &SuggestFromAttributesResult{
 		Workspace: w.Root, CriterionID: opts.CriterionID, Matrix: matrix,
-		Prefer: string(prefer), DryRun: opts.DryRun, Suggestions: sug,
+		Prefer: string(prefer), DryRun: opts.DryRun, Refresh: opts.Refresh, Suggestions: sug,
 	}
 
 	existing, err := w.Pairwise()
@@ -214,14 +217,19 @@ func (w *Workspace) SuggestFromAttributes(opts SuggestFromAttributesOptions) (*S
 
 	written := 0
 	skipped := 0
+	refreshed := 0
 	for _, s := range sug {
 		key := pairSet(matrix, s.Left, s.Right)
-		if committedKeys[key] {
+		wasCommitted := committedKeys[key]
+		if wasCommitted && !opts.Refresh {
 			skipped++
 			continue
 		}
 		if opts.DryRun {
 			written++
+			if wasCommitted {
+				refreshed++
+			}
 			continue
 		}
 		row := PairwiseRow{
@@ -232,14 +240,18 @@ func (w *Workspace) SuggestFromAttributes(opts SuggestFromAttributesOptions) (*S
 			return nil, err
 		}
 		written++
+		if wasCommitted {
+			refreshed++
+		}
 	}
 	out.Written = written
 	out.Skipped = skipped
+	out.Refreshed = refreshed
 	action := "wrote"
 	if opts.DryRun {
 		action = "would write"
 	}
-	out.Summary = fmt.Sprintf("%s %d proposal(s) on %s (%s-better); skipped %d committed",
-		action, written, matrix, prefer, skipped)
+	out.Summary = fmt.Sprintf("%s %d proposal(s) on %s (%s-better); skipped %d committed; refreshed %d",
+		action, written, matrix, prefer, skipped, refreshed)
 	return out, nil
 }

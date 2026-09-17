@@ -105,11 +105,13 @@ type ComputeResult struct {
 	Warnings         []string                 `json:"warnings"`
 	Criteria         []Criterion              `json:"criteria"`
 	Alternatives     []Alternative            `json:"alternatives"`
-	Attributes       []AttributeRow           `json:"attributes"`
-	Pairwise         []PairwiseRow            `json:"pairwise"`
-	Matrices         map[string]MatrixPayload `json:"matrices"`
-	LeafWeights      map[string]float64       `json:"leaf_weights"`
-	Ranking          []RankRow                `json:"ranking"`
+	// ExcludedAlternatives failed attribute constraints and were dropped from synthesis.
+	ExcludedAlternatives []ConstraintViolation `json:"excluded_alternatives,omitempty"`
+	Attributes           []AttributeRow        `json:"attributes"`
+	Pairwise             []PairwiseRow         `json:"pairwise"`
+	Matrices             map[string]MatrixPayload `json:"matrices"`
+	LeafWeights          map[string]float64       `json:"leaf_weights"`
+	Ranking              []RankRow                `json:"ranking"`
 	// RankingMode is "ahp" when matrices are complete, "equal_fallback" when
 	// incomplete solvers used equal weights, or empty when there is no ranking.
 	RankingMode string `json:"ranking_mode,omitempty"`
@@ -199,6 +201,7 @@ func (w *Workspace) EnsureLayout() error {
 		"alternatives.csv": {"id", "name", "description"},
 		"pairwise.csv":     {"matrix", "left", "right", "value", "status", "note"},
 		"attributes.csv":   {"alternative_id", "criterion_id", "value", "unit", "source", "note"},
+		"constraints.csv":  {"criterion_id", "min", "max", "unit", "prefer", "note"},
 	}
 	for name, fields := range headers {
 		path := w.dataPath(name)
@@ -569,6 +572,36 @@ func (w *Workspace) Compute(includeProposals bool) (*ComputeResult, error) {
 		altIDs = append(altIDs, a.ID)
 		altNames[a.ID] = a.Name
 	}
+
+	eligibleIDs, violations, err := w.EligibleAlternativeIDs()
+	if err != nil {
+		return nil, err
+	}
+	var excluded []ConstraintViolation
+	if len(violations) > 0 {
+		excluded = violations
+		bad := map[string]bool{}
+		for _, v := range violations {
+			bad[v.AlternativeID] = true
+			warnings = append(warnings, fmt.Sprintf(
+				"Excluded alternative %s from synthesis (%s/%s: %s).",
+				v.AlternativeID, v.CriterionID, orEmpty(v.Unit, "attr"), v.Reason))
+		}
+		filtered := make([]string, 0, len(eligibleIDs))
+		seen := map[string]bool{}
+		for _, id := range eligibleIDs {
+			if bad[id] || seen[id] {
+				continue
+			}
+			seen[id] = true
+			filtered = append(filtered, id)
+		}
+		altIDs = filtered
+		if len(altIDs) < 2 {
+			warnings = append(warnings, "Fewer than two alternatives remain after constraints — cannot rank.")
+		}
+	}
+
 	for cid := range leafWeights {
 		key := "alt:" + cid
 		local := engine.SolvePairwise(altIDs, pairMap[key])
@@ -598,7 +631,9 @@ func (w *Workspace) Compute(includeProposals bool) (*ComputeResult, error) {
 
 	// Structure-aware readiness: empty / single-sided workspaces are not "complete"
 	// even if vacuously filled matrices (0-id SolvePairwise returns Complete=true).
-	structOK := len(criteria) >= 1 && len(alternatives) >= 2
+	// After constraints, require ≥2 eligible alternatives (or ≥2 total if no constraints fired).
+	eligibleCount := len(altIDs)
+	structOK := len(criteria) >= 1 && eligibleCount >= 2
 	complete := structOK && len(matrices) > 0
 	consistent := complete
 	for _, m := range matrices {
@@ -616,8 +651,10 @@ func (w *Workspace) Compute(includeProposals bool) (*ComputeResult, error) {
 		if len(criteria) == 0 {
 			warnings = append(warnings, "No criteria defined — workspace is not ready.")
 		}
-		if len(alternatives) < 2 {
-			warnings = append(warnings, "Need at least two alternatives to rank.")
+		if eligibleCount < 2 {
+			if len(alternatives) < 2 {
+				warnings = append(warnings, "Need at least two alternatives to rank.")
+			}
 		}
 	}
 
@@ -634,9 +671,17 @@ func (w *Workspace) Compute(includeProposals bool) (*ComputeResult, error) {
 		Title: meta.Title, Description: meta.Description,
 		Complete: complete, Consistent: consistent, IncludeProposals: includeProposals,
 		Warnings: warnings, Criteria: criteria, Alternatives: alternatives,
+		ExcludedAlternatives: excluded,
 		Attributes: attributes, Pairwise: pairwise, Matrices: matrices,
 		LeafWeights: leafWeights, Ranking: ranking, RankingMode: rankingMode,
 	}, nil
+}
+
+func orEmpty(s, d string) string {
+	if s == "" {
+		return d
+	}
+	return s
 }
 
 func (w *Workspace) WriteOutputs(result *ComputeResult, html string) (map[string]string, error) {

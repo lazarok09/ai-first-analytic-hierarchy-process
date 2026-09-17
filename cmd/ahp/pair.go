@@ -23,12 +23,13 @@ func cmdPair() *cobra.Command {
   ahp pair repairs                  CR repair suggestions
   ahp pair ask                      interactive walk over missing pairs (TTY only)
   ahp pair suggest-from-attributes  numeric attributes → Saaty proposals
+  ahp pair import                   bulk upsert from CSV/JSON
 
 Agents / non-TTY default --as proposal (also AHP_AGENT=1).`,
 	}
 	c.AddCommand(
 		cmdPairMissing(), cmdPairSet(), cmdPairRepairs(), cmdPairAsk(),
-		cmdPairSuggestFromAttributes(),
+		cmdPairSuggestFromAttributes(), cmdPairImport(),
 	)
 	return c
 }
@@ -284,4 +285,62 @@ Refuses to run when stdout is not a TTY or AHP_AGENT is set — agents use pair 
 	addIncludeFlag(c)
 	c.Flags().String("as", "committed", "proposal|committed for answers")
 	return c
+}
+
+func cmdPairImport() *cobra.Command {
+	c := &cobra.Command{
+		Use:   "import [file]",
+		Short: "Bulk upsert pairwise judgments from CSV or JSON",
+		Long: `Import many Saaty pairs in one shot.
+
+CSV columns: matrix,left,right,value,status,note
+JSON: array of objects with the same fields, or {"rows":[...]}.
+
+Default --as proposal when status cells are empty (never invents committed).`,
+		Args:          cobra.ExactArgs(1),
+		SilenceUsage:  true,
+		SilenceErrors: true,
+		RunE:          runPairImport,
+	}
+	addWorkspaceFlag(c)
+	c.Flags().String("as", "proposal", "Default status when row status is empty")
+	c.Flags().Bool("verbose", false, "Include imported rows in JSON/human output")
+	return c
+}
+
+func runPairImport(cmd *cobra.Command, args []string) error {
+	path := args[0]
+	as, _ := cmd.Flags().GetString("as")
+	verbose, _ := cmd.Flags().GetBool("verbose")
+	ws, err := openWS(wsFlag(cmd))
+	if err != nil {
+		return cliout.Wrap(cliout.ExitIO, err)
+	}
+	var res *workspace.ImportPairwiseResult
+	lower := strings.ToLower(path)
+	switch {
+	case strings.HasSuffix(lower, ".json"):
+		res, err = ws.ImportPairwiseJSON(path, as)
+	default:
+		res, err = ws.ImportPairwiseCSV(path, as)
+	}
+	if err != nil {
+		return cliout.Wrap(cliout.ExitUsage, err)
+	}
+	p := cliout.FromCmd(cmd)
+	if p.JSON {
+		payload := map[string]any{"written": res.Written, "summary": res.Summary}
+		if verbose {
+			payload["rows"] = res.Rows
+		}
+		return p.PrintJSON(payload)
+	}
+	fmt.Fprintln(cmd.OutOrStdout(), res.Summary)
+	if verbose {
+		for _, r := range res.Rows {
+			fmt.Fprintf(cmd.OutOrStdout(), "  %s %s %s %s (%s)\n",
+				r.Matrix, r.Left, r.Right, engine.FormatSaaty(r.Value), r.Status)
+		}
+	}
+	return nil
 }

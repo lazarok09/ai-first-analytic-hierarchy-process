@@ -33,9 +33,9 @@ alt:drive,akg_k52,superlux_hd681,2,committed,slightly easier
 alt:drive,samson_sr850,akg_k414p,1,committed,both easy ~32 ohm
 alt:drive,samson_sr850,superlux_hd681,1,committed,both 32 ohm class
 alt:drive,akg_k414p,superlux_hd681,1,committed,both easy
-alt:value,superlux_hd681,akg_k414p,2,committed,289 vs 315 BRL (Cheda's vs King Musical)
-alt:value,superlux_hd681,akg_k52,2,committed,289 vs 338 BRL (Cheda's vs Serenata)
-alt:value,superlux_hd681,samson_sr850,2,committed,289 vs 369 BRL
-alt:value,akg_k414p,akg_k52,1,committed,315 vs 338 — quase empate
-alt:value,akg_k414p,samson_sr850,2,committed,315 vs 369
-alt:value,akg_k52,samson_sr850,1,committed,338 vs 369 — praticamente empate
+alt:value,akg_k414p,superlux_hd681,1,committed,attrs 252 vs 289 → ~equal Saaty 1
+alt:value,akg_k414p,akg_k52,2,committed,attrs 252 vs 359 → Saaty 2
+alt:value,akg_k414p,samson_sr850,2,committed,attrs 252 vs 369 → Saaty 2
+alt:value,superlux_hd681,akg_k52,1,committed,attrs 289 vs 359 → Saaty 1
+alt:value,superlux_hd681,samson_sr850,1,committed,attrs 289 vs 369 → Saaty 1
+alt:value,akg_k52,samson_sr850,1,committed,attrs 359 vs 369 → Saaty 1

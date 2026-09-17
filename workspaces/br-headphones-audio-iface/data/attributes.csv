@@ -1,8 +1,4 @@
 alternative_id,criterion_id,value,unit,source,note
-superlux_hd681,value,289,BRL,Cheda's SP Pix,R$288.90 Pix (lista 321). X5 Music Pix ~283.50. Fontes só BR.
-akg_k414p,value,315,BRL,King Musical boleto,R$314.99 boleto (lista 349.99).
-akg_k52,value,338,BRL,Serenata BH,R$338 à vista. Oficial br.akg.com promo R$399.
-samson_sr850,value,369,BRL,King Musical boleto,R$368.99 boleto (lista 409.99). Amazon BR promo ~293–350 é outlier vs lojas musicais.
 samson_sr850,isolation,semi_open,design,manufacturer,Vaza; fraco p/ tracking c/ mic
 akg_k52,isolation,closed_overear,design,manufacturer,Melhor isolamento do shortlist
 akg_k414p,isolation,closed_onear,design,manufacturer,Fechado mas on-ear — menos vedação que K52
@@ -11,3 +7,7 @@ samson_sr850,drive,32,ohm,spec,Fácil; ~98 dB
 akg_k52,drive,32,ohm,spec,110 dB SPL/V; muito fácil
 akg_k414p,drive,32,ohm,spec,Fácil em interface típica
 superlux_hd681,drive,32,ohm,spec,Fácil; pode fatigar no agudo
+akg_k52,value,359,BRL,br.akg.com Pix,"R$399 lista oficial; 10% Pix → R$359,10. Magalu/Buscapé ~322–349; Serenata R$338 anterior não revalidada hoje."
+akg_k414p,value,252,BRL,Tons Musicais Pix,"R$251,99 Pix (lista 279,99). King Musical boleto R$314,99 descartado como cotação mais alta na mesma faixa."
+superlux_hd681,value,289,BRL,Cheda's SP Pix,"R$288,90 Pix (lista 321). X5 Music Pix ~283,50. Revalidado 2026-09-17."
+samson_sr850,value,369,BRL,King Musical boleto,"R$368,99 boleto (lista 409,99); página compra disponível. Ponto Musical R$570 fora da faixa."

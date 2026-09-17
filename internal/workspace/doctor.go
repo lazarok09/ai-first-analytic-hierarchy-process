@@ -26,6 +26,9 @@ type Finding struct {
 type DoctorOptions struct {
 	IncludeProposals bool
 	Strict           bool
+	// Purchase enables attribute provenance / FX / pairwise-direction checks
+	// (also runs automatically when constraints.csv has rows).
+	Purchase bool
 }
 
 // DoctorReport is the structured result of Doctor / validate.
@@ -259,6 +262,38 @@ func (w *Workspace) Doctor(opts DoctorOptions) (*DoctorReport, error) {
 		})
 	}
 
+	constraints, err := w.Constraints()
+	if err != nil {
+		return nil, err
+	}
+	violations, err := w.EvaluateConstraints()
+	if err != nil {
+		return nil, err
+	}
+	for _, v := range violations {
+		report.Findings = append(report.Findings, Finding{
+			Code:     "constraint_violation",
+			Severity: "error",
+			Message:  fmt.Sprintf("%s fails constraint on %s: %s", v.AlternativeID, v.CriterionID, v.Reason),
+			Fix:      "ahp constrain " + v.CriterionID + " --min/--max  # or remove/fix alternative",
+		})
+	}
+
+	runPurchase := opts.Purchase || len(constraints) > 0
+	if runPurchase {
+		pf, err := w.PurchaseIntegrityFindings()
+		if err != nil {
+			return nil, err
+		}
+		// Avoid duplicating band violations already reported as constraint_violation.
+		for _, f := range pf {
+			if len(constraints) > 0 && (f.Code == "below_budget" || f.Code == "above_budget" || f.Code == "missing_price_attr") {
+				continue
+			}
+			report.Findings = append(report.Findings, f)
+		}
+	}
+
 	sort.SliceStable(report.Findings, func(i, j int) bool {
 		return findingRank(report.Findings[i]) < findingRank(report.Findings[j]) ||
 			(findingRank(report.Findings[i]) == findingRank(report.Findings[j]) &&
@@ -269,6 +304,9 @@ func (w *Workspace) Doctor(opts DoctorOptions) (*DoctorReport, error) {
 		"orphan_parent", "unknown_pairwise_id", "unknown_matrix", "unknown_attribute_alt", "unknown_attribute_crit",
 		"empty_matrix", "missing_pair") || (!result.Complete && !filledByProposals)
 	inconsistent := hasCode(report.Findings, "cr_hotspot") || (result.Complete && !result.Consistent)
+	purchaseBlocker := hasCode(report.Findings,
+		"fx_or_foreign_source", "missing_source", "missing_unit", "unit_mismatch", "non_numeric",
+		"pairwise_contradicts_attrs", "constraint_violation", "below_budget", "above_budget", "missing_price_attr")
 
 	if incomplete {
 		report.Complete = false
@@ -282,6 +320,8 @@ func (w *Workspace) Doctor(opts DoctorOptions) (*DoctorReport, error) {
 	case incomplete:
 		report.ExitCode = cliout.ExitIncomplete
 	case inconsistent:
+		report.ExitCode = cliout.ExitInconsistent
+	case purchaseBlocker:
 		report.ExitCode = cliout.ExitInconsistent
 	case opts.Strict && proposals > 0:
 		report.ExitCode = cliout.ExitProposals

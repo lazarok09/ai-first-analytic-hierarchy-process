@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/lazarok09/ahp-method/internal/engine"
 	"github.com/lazarok09/ahp-method/internal/render"
@@ -27,7 +28,8 @@ Rules:
 - After structure or judgment changes, call compute then read the HTML/CSV outputs.
 - Prefer missing_pairs and workspace_status before filling matrices.
 - If CR > 0.10, call suggest_repairs and propose revised values (still as proposals).
-- Use explain / sensitivity for close rankings. Use suggest_from_attributes to turn numeric attributes into proposal judgments (never commits).`
+- Use explain / sensitivity for close rankings. Use suggest_from_attributes to turn numeric attributes into proposal judgments (never commits; refresh demotes committed).
+- Use constrain for budget bands; doctor --purchase (or constraints present) audits FX/provenance.`
 
 func Run() error {
 	s := server.NewMCPServer("ahp-method", "0.3.0",
@@ -343,10 +345,11 @@ func Run() error {
 	}))
 
 	s.AddTool(mcp.NewTool("suggest_from_attributes",
-		mcp.WithDescription("Convert numeric attributes under a criterion into Saaty pairwise proposals (never commits)."),
+		mcp.WithDescription("Convert numeric attributes under a criterion into Saaty pairwise proposals (never commits). Use refresh to demote committed pairs back to proposals when attributes change."),
 		mcp.WithString("criterion_id", mcp.Required()),
 		mcp.WithString("prefer", mcp.Description("higher|lower"), mcp.DefaultString("higher")),
 		mcp.WithBoolean("dry_run"),
+		mcp.WithBoolean("refresh"),
 		mcp.WithString("workspace"),
 	), wrap(func(args map[string]any) (any, error) {
 		ws, err := open(args)
@@ -358,7 +361,65 @@ func Run() error {
 			CriterionID: strArg(args, "criterion_id", ""),
 			Prefer:      prefer,
 			DryRun:      boolArg(args, "dry_run"),
+			Refresh:     boolArg(args, "refresh"),
 		})
+	}))
+
+	s.AddTool(mcp.NewTool("constrain",
+		mcp.WithDescription("Set or list attribute eligibility constraints (min/max/unit). Out-of-band alternatives are excluded from synthesis."),
+		mcp.WithString("criterion_id", mcp.Description("Omit to list constraints")),
+		mcp.WithNumber("min"),
+		mcp.WithNumber("max"),
+		mcp.WithString("unit"),
+		mcp.WithString("prefer", mcp.Description("higher|lower")),
+		mcp.WithString("note"),
+		mcp.WithString("workspace"),
+	), wrap(func(args map[string]any) (any, error) {
+		ws, err := open(args)
+		if err != nil {
+			return nil, err
+		}
+		crit := strArg(args, "criterion_id", "")
+		if crit == "" {
+			return ws.Constraints()
+		}
+		item := workspace.Constraint{
+			CriterionID: crit,
+			Unit:        strArg(args, "unit", ""),
+			Prefer:      strArg(args, "prefer", ""),
+			Note:        strArg(args, "note", ""),
+		}
+		if _, ok := args["min"]; ok {
+			v := floatArg(args, "min", 0)
+			item.Min = &v
+		}
+		if _, ok := args["max"]; ok {
+			v := floatArg(args, "max", 0)
+			item.Max = &v
+		}
+		if err := ws.UpsertConstraint(item); err != nil {
+			return nil, err
+		}
+		return item, nil
+	}))
+
+	s.AddTool(mcp.NewTool("import_pairwise",
+		mcp.WithDescription("Bulk upsert pairwise judgments from a CSV or JSON file path."),
+		mcp.WithString("path", mcp.Required()),
+		mcp.WithString("as", mcp.Description("Default status when empty"), mcp.DefaultString("proposal")),
+		mcp.WithString("workspace"),
+	), wrap(func(args map[string]any) (any, error) {
+		ws, err := open(args)
+		if err != nil {
+			return nil, err
+		}
+		path := strArg(args, "path", "")
+		as := strArg(args, "as", "proposal")
+		lower := strings.ToLower(path)
+		if strings.HasSuffix(lower, ".json") {
+			return ws.ImportPairwiseJSON(path, as)
+		}
+		return ws.ImportPairwiseCSV(path, as)
 	}))
 
 	s.AddTool(mcp.NewTool("render_report",

@@ -111,24 +111,31 @@ Banned patterns (script flags as errors/warnings):
 Prefer CLI bridge when available (rebuild local binary if needed):
 
 ```bash
-./bin/ahp rate --criterion value --prefer lower --dry-run -w <ws>
-# if dry-run looks right:
-./bin/ahp rate --criterion value --prefer lower -w <ws>   # writes proposals only
-./bin/ahp plan -w <ws>
+./ahp rate --criterion value --prefer lower --dry-run -w <ws>
+# if prices changed after committed pairs:
+./ahp rate --criterion value --prefer lower --refresh -w <ws>   # demotes→proposals
+./ahp plan -w <ws>
 ```
 
-If `rate` is missing in the installed binary, rebuild from this repo (`go build -o bin/ahp ./cmd/ahp`) or set pairs manually — still run the audit script so direction cannot silently invert.
+Lock the budget band in the workspace (not only in chat):
+
+```bash
+./ahp constrain value --min 200 --max 400 --unit BRL --prefer lower -w <ws>
+./ahp doctor --purchase -w <ws>
+```
+
+If `rate` is missing in the installed binary, rebuild from this repo (`go build -o ahp ./cmd/ahp`) or set pairs manually — still run the audit script / `doctor --purchase` so direction cannot silently invert.
 
 **Never** invent Saaty values from foreign MSRP ratios.
 
 ### 6. Doctor + status
 
 ```bash
-ahp doctor -w <ws>
+ahp doctor --purchase -w <ws>
 ahp status -w <ws>
 ```
 
-Fix doctor errors first. Do not defend a ranking while integrity findings remain.
+Fix doctor errors first (including constraint_violation / fx_or_foreign_source). Do not defend a ranking while integrity findings remain.
 
 ## Severity guide
 

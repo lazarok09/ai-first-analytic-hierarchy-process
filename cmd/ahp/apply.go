@@ -26,6 +26,7 @@ func cmdApply() *cobra.Command {
 	addWorkspaceFlag(c)
 	c.Flags().Bool("dry-run", false, "Preview only (same as ahp plan)")
 	c.Flags().BoolP("yes", "y", false, "Skip confirmation")
+	c.Flags().Bool("verbose", false, "Include full committed rows in output")
 	c.Flags().String("matrix", "", "Optional matrix filter")
 	c.Flags().String("left", "", "Optional left id")
 	c.Flags().String("right", "", "Optional right id")
@@ -59,6 +60,7 @@ func cmdCommitProposals() *cobra.Command {
 func runApply(cmd *cobra.Command, args []string) error {
 	dryRun, _ := cmd.Flags().GetBool("dry-run")
 	yes, _ := cmd.Flags().GetBool("yes")
+	verbose, _ := cmd.Flags().GetBool("verbose")
 	matrix, _ := cmd.Flags().GetString("matrix")
 	left, _ := cmd.Flags().GetString("left")
 	right, _ := cmd.Flags().GetString("right")
@@ -107,13 +109,36 @@ func runApply(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return cliout.Wrap(cliout.ExitIO, err)
 	}
-	p := cliout.FromCmd(cmd)
-	if p.JSON {
-		return p.PrintJSON(map[string]any{
-			"committed": len(updated),
-			"rows":      updated,
-		})
+
+	after, err := ws.Compute(false)
+	if err != nil {
+		return cliout.Wrap(cliout.ExitIO, err)
 	}
-	fmt.Printf("committed %d proposal(s)\n", len(updated))
+	p := cliout.FromCmd(cmd)
+	summary := map[string]any{
+		"committed":     len(updated),
+		"cr_ok":         after.Consistent,
+		"complete":      after.Complete,
+		"ranking_after": after.Ranking,
+	}
+	if verbose {
+		summary["rows"] = updated
+	}
+	if p.JSON {
+		return p.PrintJSON(summary)
+	}
+	fmt.Printf("committed %d proposal(s)  complete=%v  cr_ok=%v\n", len(updated), after.Complete, after.Consistent)
+	for i, r := range after.Ranking {
+		if i >= 5 {
+			fmt.Printf("  … %d more\n", len(after.Ranking)-5)
+			break
+		}
+		fmt.Printf("  #%d  %s  %.4f\n", r.Rank, r.Name, r.Weight)
+	}
+	if verbose {
+		for _, row := range updated {
+			fmt.Printf("  %s %s %s\n", row.Matrix, row.Left, row.Right)
+		}
+	}
 	return nil
 }

@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `ahp rate --refresh` / `pair suggest-from-attributes --refresh`: demote committed pairs to proposals from attributes (never auto-commits)
+- `ahp constrain`: write `data/constraints.csv` eligibility bands; out-of-band alts excluded from synthesis
+- `ahp doctor --purchase`: FX/foreign source, missing unit/source, pairwise vs attribute direction (also auto-runs when constraints exist)
+- `ahp pair import`: bulk upsert pairwise from CSV/JSON
+- MCP tools: `constrain`, `import_pairwise`; `suggest_from_attributes.refresh`
 - GitHub Actions CI (`go test`, `go vet`, build + vendor-selection smoke) on Linux and macOS
 - GoReleaser workflow for tagged `v*` releases
 - Community docs: `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, issue templates
@@ -16,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `ahp apply` defaults to a summary (`committed`, `cr_ok`, ranking peek); use `--verbose` for full rows
 - Module path aligned to `github.com/lazarok09/ahp-method` for public `go install`
 - Documented minimum Go version as **1.25.5** (required by `mcp-go`)
 - `ahp version` can be injected at release via `-ldflags -X main.version=…`

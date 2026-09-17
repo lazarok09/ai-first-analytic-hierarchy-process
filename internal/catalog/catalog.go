@@ -54,10 +54,20 @@ var entries = []Entry{
 	},
 	{
 		ID: "doctor", CLI: "ahp doctor", MCP: "",
-		Short: "Diagnose schema, missing pairs, and CR hotspots",
+		Short: "Diagnose schema, missing pairs, CR, constraints, purchase integrity",
 		Examples: []string{
 			"ahp doctor",
+			"ahp doctor --purchase --json",
 			"ahp doctor --strict --json",
+		},
+	},
+	{
+		ID: "constrain", CLI: "ahp constrain", MCP: "constrain",
+		Short: "Set attribute eligibility band (min/max/unit)",
+		Long:  "Writes data/constraints.csv; out-of-band alts are excluded from synthesis.",
+		Examples: []string{
+			"ahp constrain value --min 200 --max 400 --unit BRL --prefer lower",
+			"ahp constrain --json",
 		},
 	},
 	{
@@ -102,8 +112,8 @@ var entries = []Entry{
 	},
 	{
 		ID: "apply", CLI: "ahp apply", MCP: "commit_proposals",
-		Short: "Commit proposal judgments (-y / --dry-run)",
-		Examples: []string{"ahp apply --dry-run", "ahp apply -y"},
+		Short: "Commit proposal judgments (summary by default; --verbose for rows)",
+		Examples: []string{"ahp apply --dry-run", "ahp apply -y", "ahp apply -y --verbose --json"},
 	},
 	{
 		ID: "get", CLI: "ahp get", MCP: "get_state",
@@ -144,9 +154,10 @@ var entries = []Entry{
 	{
 		ID: "rate", CLI: "ahp rate", MCP: "suggest_from_attributes",
 		Short: "Opt-in: attributes → Saaty pairwise proposals (never commits)",
-		Long:  "Alias of ahp pair suggest-from-attributes. Use --prefer lower for price-like criteria.",
+		Long:  "Alias of ahp pair suggest-from-attributes. Use --prefer lower for price-like criteria; --refresh demotes committed→proposal.",
 		Examples: []string{
 			"ahp rate --criterion value --prefer lower --dry-run",
+			"ahp rate --criterion value --prefer lower --refresh",
 			"ahp pair suggest-from-attributes --criterion value --prefer lower",
 		},
 	},
@@ -155,6 +166,15 @@ var entries = []Entry{
 		Short: "Propose alt pairwise from numeric attributes",
 		Examples: []string{
 			"ahp pair suggest-from-attributes --criterion value --prefer lower --dry-run",
+			"ahp pair suggest-from-attributes --criterion value --prefer lower --refresh",
+		},
+	},
+	{
+		ID: "pair-import", CLI: "ahp pair import", MCP: "import_pairwise",
+		Short: "Bulk upsert pairwise judgments from CSV/JSON",
+		Examples: []string{
+			"ahp pair import judgments.csv",
+			"ahp pair import judgments.json --as proposal",
 		},
 	},
 	{
