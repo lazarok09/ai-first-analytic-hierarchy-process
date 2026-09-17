@@ -29,9 +29,9 @@ type NextHint struct {
 //
 // Priority (first match wins):
 //  1. structure gaps (no criteria / no alternatives)
-//  2. incomplete matrices → pair missing / pair set
-//  3. inconsistent CR → pair repairs (doctor for full scan)
-//  4. proposals pending → plan then apply
+//  2. uncovered pairwise gaps → pair missing / pair set
+//  3. proposals that fill all gaps (or pending on complete) → plan
+//  4. inconsistent CR → pair repairs (doctor for full scan)
 //  5. ready → compute, or open if report already exists
 func RecommendNext(s *StatusSummary) NextAction {
 	if s == nil {
@@ -40,6 +40,12 @@ func RecommendNext(s *StatusSummary) NextAction {
 			Command: "ahp init",
 			Reason:  "no workspace status available",
 		}
+	}
+
+	uncovered := s.Uncovered
+	if uncovered == nil {
+		// Tests / callers that only set Missing.
+		uncovered = s.Missing
 	}
 
 	switch {
@@ -53,17 +59,35 @@ func RecommendNext(s *StatusSummary) NextAction {
 				Reason:  "add alternatives once criteria exist",
 			}},
 		}
-	case s.Alternatives == 0:
+	case s.Alternatives < 2:
+		reason := "no alternatives yet"
+		if s.Alternatives == 1 {
+			reason = "need at least two alternatives to compare"
+		}
 		return NextAction{
 			Kind:    "structure",
 			Command: "ahp add-alternative",
-			Reason:  "no alternatives yet",
+			Reason:  reason,
 		}
-	case !s.Complete || len(s.Missing) > 0:
-		n := len(s.Missing)
+	case s.ProposalsFillGaps:
+		n := s.PairwiseProposals
+		return NextAction{
+			Kind:    "proposals",
+			Command: "ahp plan",
+			Reason:  fmt.Sprintf("%d proposal(s) fill all gaps — preview then apply", n),
+			Hints: []NextHint{{
+				Command: "ahp apply -y",
+				Reason:  "commit proposals after review",
+			}},
+		}
+	case len(uncovered) > 0 || !s.Complete:
+		n := len(uncovered)
 		reason := "fill missing pairwise judgments"
 		if n > 0 {
 			reason = fmt.Sprintf("fill %d missing pairwise judgment(s)", n)
+			if covered := len(s.CoveredByProposals); covered > 0 {
+				reason = fmt.Sprintf("fill %d uncovered judgment(s) (%d covered by proposals)", n, covered)
+			}
 		}
 		return NextAction{
 			Kind:    "incomplete",
@@ -129,7 +153,17 @@ func ReadinessExit(s *StatusSummary) int {
 	if s == nil {
 		return cliout.ExitIO
 	}
-	if s.Criteria == 0 || s.Alternatives == 0 || !s.Complete || len(s.Missing) > 0 {
+	if s.Criteria == 0 || s.Alternatives < 2 {
+		return cliout.ExitIncomplete
+	}
+	if s.ProposalsFillGaps {
+		return cliout.ExitProposals
+	}
+	uncovered := s.Uncovered
+	if uncovered == nil {
+		uncovered = s.Missing
+	}
+	if !s.Complete || len(uncovered) > 0 {
 		return cliout.ExitIncomplete
 	}
 	if !s.Consistent {

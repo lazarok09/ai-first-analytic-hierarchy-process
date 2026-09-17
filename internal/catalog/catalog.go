@@ -72,7 +72,8 @@ var entries = []Entry{
 	},
 	{
 		ID: "pair-missing", CLI: "ahp pair missing", MCP: "missing_pairs",
-		Short: "List incomplete Saaty pairs",
+		Short: "List pairwise gaps with proposal coverage",
+		Long:  "JSON: missing_committed, covered_by_proposals, uncovered.",
 		Examples: []string{"ahp pair missing", "ahp pair missing --json"},
 	},
 	{

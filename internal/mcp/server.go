@@ -222,7 +222,7 @@ func Run() error {
 	}))
 
 	s.AddTool(mcp.NewTool("missing_pairs",
-		mcp.WithDescription("List incomplete Saaty pairs the agent still needs (as proposals)."),
+		mcp.WithDescription("Pairwise gaps with coverage: missing_committed, covered_by_proposals, uncovered."),
 		mcp.WithString("workspace"),
 		mcp.WithBoolean("include_proposals"),
 	), wrap(func(args map[string]any) (any, error) {
@@ -234,7 +234,21 @@ func Run() error {
 		if err != nil {
 			return nil, err
 		}
-		return s.Missing, nil
+		cov := workspace.MissingCoverage{
+			MissingCommitted:   s.MissingCommitted,
+			CoveredByProposals: s.CoveredByProposals,
+			Uncovered:          s.Uncovered,
+		}
+		if cov.MissingCommitted == nil {
+			cov.MissingCommitted = []workspace.MissingPair{}
+		}
+		if cov.CoveredByProposals == nil {
+			cov.CoveredByProposals = []workspace.MissingPair{}
+		}
+		if cov.Uncovered == nil {
+			cov.Uncovered = []workspace.MissingPair{}
+		}
+		return cov, nil
 	}))
 
 	s.AddTool(mcp.NewTool("suggest_repairs",

@@ -89,20 +89,37 @@ type RankRow struct {
 	Weight float64 `json:"weight"`
 }
 
+// Ranking mode labels for status / agents (L6 equal-weight fallback).
+const (
+	RankingModeNone          = ""
+	RankingModeAHP           = "ahp"
+	RankingModeEqualFallback = "equal_fallback"
+)
+
 type ComputeResult struct {
-	Title            string                    `json:"title"`
-	Description      string                    `json:"description"`
-	Complete         bool                      `json:"complete"`
-	Consistent       bool                      `json:"consistent"`
-	IncludeProposals bool                      `json:"include_proposals"`
-	Warnings         []string                  `json:"warnings"`
-	Criteria         []Criterion               `json:"criteria"`
-	Alternatives     []Alternative             `json:"alternatives"`
-	Attributes       []AttributeRow            `json:"attributes"`
-	Pairwise         []PairwiseRow             `json:"pairwise"`
-	Matrices         map[string]MatrixPayload  `json:"matrices"`
-	LeafWeights      map[string]float64        `json:"leaf_weights"`
-	Ranking          []RankRow                 `json:"ranking"`
+	Title            string                   `json:"title"`
+	Description      string                   `json:"description"`
+	Complete         bool                     `json:"complete"`
+	Consistent       bool                     `json:"consistent"`
+	IncludeProposals bool                     `json:"include_proposals"`
+	Warnings         []string                 `json:"warnings"`
+	Criteria         []Criterion              `json:"criteria"`
+	Alternatives     []Alternative            `json:"alternatives"`
+	Attributes       []AttributeRow           `json:"attributes"`
+	Pairwise         []PairwiseRow            `json:"pairwise"`
+	Matrices         map[string]MatrixPayload `json:"matrices"`
+	LeafWeights      map[string]float64       `json:"leaf_weights"`
+	Ranking          []RankRow                `json:"ranking"`
+	// RankingMode is "ahp" when matrices are complete, "equal_fallback" when
+	// incomplete solvers used equal weights, or empty when there is no ranking.
+	RankingMode string `json:"ranking_mode,omitempty"`
+}
+
+// MissingCoverage splits pairwise gaps into committed-only vs proposal-covered (L4).
+type MissingCoverage struct {
+	MissingCommitted   []MissingPair `json:"missing_committed"`
+	CoveredByProposals []MissingPair `json:"covered_by_proposals"`
+	Uncovered          []MissingPair `json:"uncovered"`
 }
 
 type StatusSummary struct {
@@ -116,10 +133,17 @@ type StatusSummary struct {
 	Complete          bool          `json:"complete"`
 	Consistent        bool          `json:"consistent"`
 	Missing           []MissingPair `json:"missing"`
-	Repairs           []RepairRow   `json:"repairs"`
-	Ranking           []RankRow     `json:"ranking"`
-	Warnings          []string      `json:"warnings"`
-	ReportHTML        string        `json:"report_html"`
+	// MissingCommitted / CoveredByProposals / Uncovered explain proposal coverage.
+	MissingCommitted   []MissingPair `json:"missing_committed"`
+	CoveredByProposals []MissingPair `json:"covered_by_proposals"`
+	Uncovered          []MissingPair `json:"uncovered"`
+	// ProposalsFillGaps is true when committed view is gappy but proposals cover every pair.
+	ProposalsFillGaps bool        `json:"proposals_fill_gaps"`
+	Repairs           []RepairRow `json:"repairs"`
+	Ranking           []RankRow   `json:"ranking"`
+	RankingMode       string      `json:"ranking_mode,omitempty"`
+	Warnings          []string    `json:"warnings"`
+	ReportHTML        string      `json:"report_html"`
 	// Next is the single recommended follow-up (status v2 / agents).
 	Next NextAction `json:"next"`
 	// ExitCode is the readiness code for `ahp status --check` (0/2/3/4).
@@ -572,7 +596,10 @@ func (w *Workspace) Compute(includeProposals bool) (*ComputeResult, error) {
 		ranking = append(ranking, RankRow{Rank: i + 1, ID: r.id, Name: altNames[r.id], Weight: r.w})
 	}
 
-	complete := len(matrices) > 0
+	// Structure-aware readiness: empty / single-sided workspaces are not "complete"
+	// even if vacuously filled matrices (0-id SolvePairwise returns Complete=true).
+	structOK := len(criteria) >= 1 && len(alternatives) >= 2
+	complete := structOK && len(matrices) > 0
 	consistent := complete
 	for _, m := range matrices {
 		if !m.Complete {
@@ -583,13 +610,32 @@ func (w *Workspace) Compute(includeProposals bool) (*ComputeResult, error) {
 			consistent = false
 		}
 	}
+	if !structOK {
+		complete = false
+		consistent = false
+		if len(criteria) == 0 {
+			warnings = append(warnings, "No criteria defined — workspace is not ready.")
+		}
+		if len(alternatives) < 2 {
+			warnings = append(warnings, "Need at least two alternatives to rank.")
+		}
+	}
+
+	rankingMode := RankingModeNone
+	if len(ranking) > 0 {
+		if complete {
+			rankingMode = RankingModeAHP
+		} else {
+			rankingMode = RankingModeEqualFallback
+		}
+	}
 
 	return &ComputeResult{
 		Title: meta.Title, Description: meta.Description,
 		Complete: complete, Consistent: consistent, IncludeProposals: includeProposals,
 		Warnings: warnings, Criteria: criteria, Alternatives: alternatives,
 		Attributes: attributes, Pairwise: pairwise, Matrices: matrices,
-		LeafWeights: leafWeights, Ranking: ranking,
+		LeafWeights: leafWeights, Ranking: ranking, RankingMode: rankingMode,
 	}, nil
 }
 
@@ -644,10 +690,6 @@ func (w *Workspace) WriteOutputs(result *ComputeResult, html string) (map[string
 }
 
 func (w *Workspace) Status(includeProposals bool) (*StatusSummary, error) {
-	result, err := w.Compute(includeProposals)
-	if err != nil {
-		return nil, err
-	}
 	pairwise, err := w.Pairwise()
 	if err != nil {
 		return nil, err
@@ -660,29 +702,145 @@ func (w *Workspace) Status(includeProposals bool) (*StatusSummary, error) {
 			committed++
 		}
 	}
-	var missing []MissingPair
-	var repairs []RepairRow
-	for key, m := range result.Matrices {
-		for _, p := range m.Missing {
-			missing = append(missing, MissingPair{Matrix: key, Left: p["left"], Right: p["right"]})
+
+	committedRes, err := w.Compute(false)
+	if err != nil {
+		return nil, err
+	}
+	var withProp *ComputeResult
+	if proposals > 0 {
+		withProp, err = w.Compute(true)
+		if err != nil {
+			return nil, err
 		}
-		for _, h := range m.Repairs {
+	} else {
+		withProp = committedRes
+	}
+
+	result := committedRes
+	if includeProposals {
+		result = withProp
+	}
+
+	cov := coverageFromResults(committedRes, withProp)
+
+	var repairs []RepairRow
+	keys := make([]string, 0, len(result.Matrices))
+	for key := range result.Matrices {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	for _, key := range keys {
+		for _, h := range result.Matrices[key].Repairs {
 			h.Matrix = key
 			repairs = append(repairs, h)
 		}
 	}
+
+	missing := missingFromResult(result)
+	if missing == nil {
+		missing = []MissingPair{}
+	}
+
 	s := &StatusSummary{
 		Workspace: w.Root, Title: result.Title,
 		Criteria: len(result.Criteria), Alternatives: len(result.Alternatives),
 		Attributes: len(result.Attributes),
 		PairwiseCommitted: committed, PairwiseProposals: proposals,
 		Complete: result.Complete, Consistent: result.Consistent,
-		Missing: missing, Repairs: repairs, Ranking: result.Ranking,
-		Warnings: result.Warnings, ReportHTML: filepath.Join(w.OutputDir(), "report.html"),
+		Missing: missing,
+		MissingCommitted:   cov.MissingCommitted,
+		CoveredByProposals: cov.CoveredByProposals,
+		Uncovered:          cov.Uncovered,
+		ProposalsFillGaps:  proposals > 0 && len(cov.Uncovered) == 0 && len(cov.MissingCommitted) > 0,
+		Repairs:            repairs,
+		Ranking:            result.Ranking,
+		RankingMode:        result.RankingMode,
+		Warnings:           append([]string(nil), result.Warnings...),
+		ReportHTML:         filepath.Join(w.OutputDir(), "report.html"),
+	}
+	if s.ProposalsFillGaps && !includeProposals {
+		s.Warnings = append(s.Warnings, fmt.Sprintf(
+			"%d proposal(s) fill all pairwise gaps — run ahp plan (then ahp apply).", proposals))
 	}
 	s.Next = NextActionFromStatus(s)
 	s.ExitCode = ReadinessExit(s)
 	return s, nil
+}
+
+func coverageFromResults(committedRes, withProp *ComputeResult) MissingCoverage {
+	missingCommitted := missingFromResult(committedRes)
+	uncovered := missingFromResult(withProp)
+	covered := coveredPairs(missingCommitted, uncovered)
+	if missingCommitted == nil {
+		missingCommitted = []MissingPair{}
+	}
+	if covered == nil {
+		covered = []MissingPair{}
+	}
+	if uncovered == nil {
+		uncovered = []MissingPair{}
+	}
+	return MissingCoverage{
+		MissingCommitted:   missingCommitted,
+		CoveredByProposals: covered,
+		Uncovered:          uncovered,
+	}
+}
+
+func (w *Workspace) missingCoverage(proposalCount int) (MissingCoverage, error) {
+	committedRes, err := w.Compute(false)
+	if err != nil {
+		return MissingCoverage{}, err
+	}
+	withProp := committedRes
+	if proposalCount > 0 {
+		withProp, err = w.Compute(true)
+		if err != nil {
+			return MissingCoverage{}, err
+		}
+	}
+	return coverageFromResults(committedRes, withProp), nil
+}
+
+func missingFromResult(result *ComputeResult) []MissingPair {
+	if result == nil {
+		return nil
+	}
+	keys := make([]string, 0, len(result.Matrices))
+	for k := range result.Matrices {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	var missing []MissingPair
+	for _, key := range keys {
+		for _, p := range result.Matrices[key].Missing {
+			missing = append(missing, MissingPair{Matrix: key, Left: p["left"], Right: p["right"]})
+		}
+	}
+	return missing
+}
+
+func missingPairKey(m MissingPair) string {
+	a, b := m.Left, m.Right
+	if a > b {
+		a, b = b, a
+	}
+	return m.Matrix + "|" + a + "|" + b
+}
+
+func coveredPairs(committed, uncovered []MissingPair) []MissingPair {
+	still := map[string]struct{}{}
+	for _, m := range uncovered {
+		still[missingPairKey(m)] = struct{}{}
+	}
+	var covered []MissingPair
+	for _, m := range committed {
+		if _, ok := still[missingPairKey(m)]; !ok {
+			covered = append(covered, m)
+		}
+	}
+	return covered
 }
 
 func matrixPayload(r engine.MatrixResult, names map[string]string) MatrixPayload {

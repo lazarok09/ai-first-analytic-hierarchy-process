@@ -32,7 +32,15 @@ Agents / non-TTY default --as proposal (also AHP_AGENT=1).`,
 func cmdPairMissing() *cobra.Command {
 	c := &cobra.Command{
 		Use:   "missing",
-		Short: "List incomplete Saaty pairs",
+		Short: "List incomplete Saaty pairs (committed vs proposal coverage)",
+		Long: `Report pairwise gaps with proposal coverage:
+
+  missing_committed     gaps ignoring proposals
+  covered_by_proposals  gaps that proposals already fill
+  uncovered             gaps still needing a judgment
+
+Default JSON is this object (not a flat list). Human output shows a coverage
+summary plus an uncovered table (or notes when proposals fill all gaps).`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			include, _ := cmd.Flags().GetBool("include-proposals")
 			p := cliout.FromCmd(cmd)
@@ -44,21 +52,37 @@ func cmdPairMissing() *cobra.Command {
 			if err != nil {
 				return cliout.Wrap(cliout.ExitIO, err)
 			}
+			report := workspace.MissingCoverage{
+				MissingCommitted:   s.MissingCommitted,
+				CoveredByProposals: s.CoveredByProposals,
+				Uncovered:          s.Uncovered,
+			}
+			if report.MissingCommitted == nil {
+				report.MissingCommitted = []workspace.MissingPair{}
+			}
+			if report.CoveredByProposals == nil {
+				report.CoveredByProposals = []workspace.MissingPair{}
+			}
+			if report.Uncovered == nil {
+				report.Uncovered = []workspace.MissingPair{}
+			}
 			if p.JSON {
-				missing := s.Missing
-				if missing == nil {
-					missing = []workspace.MissingPair{}
-				}
-				return p.PrintJSON(missing)
+				return p.PrintJSON(report)
 			}
-			headers := []string{"matrix", "left", "right"}
-			rows := make([][]string, 0, len(s.Missing))
-			for _, m := range s.Missing {
-				rows = append(rows, []string{m.Matrix, m.Left, m.Right})
+			p.Humanf("committed gaps: %d   covered by proposals: %d   uncovered: %d\n",
+				len(report.MissingCommitted), len(report.CoveredByProposals), len(report.Uncovered))
+			if s.ProposalsFillGaps {
+				p.Humanf("%d proposal(s) fill all gaps — run: ahp plan\n", s.PairwiseProposals)
+				return nil
 			}
-			if len(rows) == 0 {
+			if len(report.Uncovered) == 0 {
 				p.Humanf("no missing pairs\n")
 				return nil
+			}
+			headers := []string{"matrix", "left", "right"}
+			rows := make([][]string, 0, len(report.Uncovered))
+			for _, m := range report.Uncovered {
+				rows = append(rows, []string{m.Matrix, m.Left, m.Right})
 			}
 			return p.PrintTable(headers, rows)
 		},

@@ -84,7 +84,10 @@ func printStatusHuman(w io.Writer, s *workspace.StatusSummary) {
 	}
 	fmt.Fprintf(w, "Matrices  %s   Consistency  %s   Proposals  %s\n", matrices, consistency, proposals)
 
-	if len(s.Ranking) > 0 {
+	switch {
+	case s.RankingMode == workspace.RankingModeEqualFallback:
+		fmt.Fprintln(w, "Ranking   (hidden — equal-weight fallback; matrices incomplete)")
+	case len(s.Ranking) > 0:
 		parts := make([]string, 0, len(s.Ranking))
 		limit := 5
 		if len(s.Ranking) < limit {
@@ -95,8 +98,12 @@ func printStatusHuman(w io.Writer, s *workspace.StatusSummary) {
 			parts = append(parts, fmt.Sprintf("%d. %s %.2f", r.Rank, r.Name, r.Weight))
 		}
 		fmt.Fprintf(w, "Ranking   %s\n", strings.Join(parts, "   "))
-	} else {
+	default:
 		fmt.Fprintln(w, "Ranking   (none yet)")
+	}
+
+	if s.ProposalsFillGaps {
+		fmt.Fprintf(w, "note: %d proposal(s) fill all pairwise gaps — run ahp plan\n", s.PairwiseProposals)
 	}
 
 	for _, warn := range s.Warnings {

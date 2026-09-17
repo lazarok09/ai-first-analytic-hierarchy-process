@@ -28,13 +28,16 @@ func TestRecommendNextIncomplete(t *testing.T) {
 	}
 }
 
-func TestRecommendNextProposals(t *testing.T) {
+func TestRecommendNextProposalsFillGaps(t *testing.T) {
 	s := &workspace.StatusSummary{
-		Criteria:          2,
-		Alternatives:      2,
-		Complete:          true,
-		Consistent:        true,
-		PairwiseProposals: 2,
+		Criteria:           2,
+		Alternatives:       2,
+		Complete:           false,
+		PairwiseProposals:  3,
+		ProposalsFillGaps:  true,
+		MissingCommitted:   []workspace.MissingPair{{Matrix: "criteria", Left: "a", Right: "b"}},
+		CoveredByProposals: []workspace.MissingPair{{Matrix: "criteria", Left: "a", Right: "b"}},
+		Uncovered:          []workspace.MissingPair{},
 	}
 	next := workspace.RecommendNext(s)
 	if next.Kind != "proposals" || next.Command != "ahp plan" {
@@ -42,6 +45,36 @@ func TestRecommendNextProposals(t *testing.T) {
 	}
 	if workspace.ReadinessExit(s) != cliout.ExitProposals {
 		t.Fatalf("exit=%d", workspace.ReadinessExit(s))
+	}
+}
+
+func TestRecommendNextProposals(t *testing.T) {
+	s := &workspace.StatusSummary{
+		Criteria:          2,
+		Alternatives:      2,
+		Complete:          true,
+		Consistent:        true,
+		PairwiseProposals: 2,
+		Uncovered:         []workspace.MissingPair{},
+	}
+	next := workspace.RecommendNext(s)
+	if next.Kind != "proposals" || next.Command != "ahp plan" {
+		t.Fatalf("got %+v", next)
+	}
+	if workspace.ReadinessExit(s) != cliout.ExitProposals {
+		t.Fatalf("exit=%d", workspace.ReadinessExit(s))
+	}
+}
+
+func TestRecommendNextOneAlternative(t *testing.T) {
+	s := &workspace.StatusSummary{
+		Criteria:     2,
+		Alternatives: 1,
+		Complete:     false,
+	}
+	next := workspace.RecommendNext(s)
+	if next.Kind != "structure" || next.Command != "ahp add-alternative" {
+		t.Fatalf("got %+v", next)
 	}
 }
 
