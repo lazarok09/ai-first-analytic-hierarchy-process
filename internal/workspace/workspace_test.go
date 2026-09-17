@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/lazarok/ahp-method/internal/render"
-	"github.com/lazarok/ahp-method/internal/workspace"
+	"github.com/lazarok09/ahp-method/internal/render"
+	"github.com/lazarok09/ahp-method/internal/workspace"
 )
 
 func TestRoundTrip(t *testing.T) {

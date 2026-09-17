@@ -1,6 +1,8 @@
-module github.com/lazarok/ahp-method
+module github.com/lazarok09/ahp-method
 
-go 1.27.1
+go 1.25.5
+
+toolchain go1.27.1
 
 require (
 	github.com/mark3labs/mcp-go v1.1.0

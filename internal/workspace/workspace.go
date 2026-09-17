@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/lazarok/ahp-method/internal/engine"
+	"github.com/lazarok09/ahp-method/internal/engine"
 )
 
 type Meta struct {

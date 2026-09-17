@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/lazarok/ahp-method/internal/workspace"
+	"github.com/lazarok09/ahp-method/internal/workspace"
 )
 
 func TestTreeVendorSelectionSmoke(t *testing.T) {

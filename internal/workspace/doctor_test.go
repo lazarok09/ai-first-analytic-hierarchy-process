@@ -3,8 +3,8 @@ package workspace_test
 import (
 	"testing"
 
-	"github.com/lazarok/ahp-method/internal/cliout"
-	"github.com/lazarok/ahp-method/internal/workspace"
+	"github.com/lazarok09/ahp-method/internal/cliout"
+	"github.com/lazarok09/ahp-method/internal/workspace"
 )
 
 func TestDoctorExitCodes(t *testing.T) {

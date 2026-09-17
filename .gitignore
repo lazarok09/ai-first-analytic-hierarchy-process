@@ -1,19 +1,18 @@
-# See https://help.github.com/articles/ignoring-files/
-
+# Build artifacts
 bin/
-.venv/
-__pycache__/
-*.py[cod]
-*.egg-info/
-.pytest_cache/
-.mypy_cache/
 dist/
-build/
 
-.DS_Store
+# Local env (never commit secrets)
 .env
 .env.*
+!.env.example
 
-# generated AHP outputs (keep examples data)
+# Generated AHP outputs (keep example workspace data)
 output/
 examples/**/output/
+
+# OS
+.DS_Store
+
+# Local Playwright MCP captures
+.playwright-mcp/

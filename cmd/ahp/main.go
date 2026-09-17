@@ -6,15 +6,16 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/lazarok/ahp-method/internal/cliout"
-	"github.com/lazarok/ahp-method/internal/engine"
-	ahpmcp "github.com/lazarok/ahp-method/internal/mcp"
-	"github.com/lazarok/ahp-method/internal/render"
-	"github.com/lazarok/ahp-method/internal/workspace"
+	"github.com/lazarok09/ahp-method/internal/cliout"
+	"github.com/lazarok09/ahp-method/internal/engine"
+	ahpmcp "github.com/lazarok09/ahp-method/internal/mcp"
+	"github.com/lazarok09/ahp-method/internal/render"
+	"github.com/lazarok09/ahp-method/internal/workspace"
 	"github.com/spf13/cobra"
 )
 
-const version = "0.3.0"
+// Overridden at release via -ldflags "-X main.version=…".
+var version = "0.3.0"
 
 func main() {
 	root := &cobra.Command{

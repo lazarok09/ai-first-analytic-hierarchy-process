@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/lazarok/ahp-method/internal/cliout"
-	"github.com/lazarok/ahp-method/internal/workspace"
+	"github.com/lazarok09/ahp-method/internal/cliout"
+	"github.com/lazarok09/ahp-method/internal/workspace"
 	"github.com/spf13/cobra"
 )
 

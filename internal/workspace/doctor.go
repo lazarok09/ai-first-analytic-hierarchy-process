@@ -6,8 +6,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/lazarok/ahp-method/internal/cliout"
-	"github.com/lazarok/ahp-method/internal/engine"
+	"github.com/lazarok09/ahp-method/internal/cliout"
+	"github.com/lazarok09/ahp-method/internal/engine"
 )
 
 // Finding is one actionable doctor diagnostic.

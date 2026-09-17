@@ -6,8 +6,8 @@ import (
 	"math"
 	"strings"
 
-	"github.com/lazarok/ahp-method/internal/engine"
-	"github.com/lazarok/ahp-method/internal/workspace"
+	"github.com/lazarok09/ahp-method/internal/engine"
+	"github.com/lazarok09/ahp-method/internal/workspace"
 )
 
 func HTML(result *workspace.ComputeResult) string {

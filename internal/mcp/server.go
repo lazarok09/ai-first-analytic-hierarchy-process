@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/lazarok/ahp-method/internal/engine"
-	"github.com/lazarok/ahp-method/internal/render"
-	"github.com/lazarok/ahp-method/internal/workspace"
+	"github.com/lazarok09/ahp-method/internal/engine"
+	"github.com/lazarok09/ahp-method/internal/render"
+	"github.com/lazarok09/ahp-method/internal/workspace"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 )

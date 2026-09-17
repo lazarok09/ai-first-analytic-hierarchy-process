@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/lazarok/ahp-method/internal/cliout"
+	"github.com/lazarok09/ahp-method/internal/cliout"
 )
 
 // NextAction is the single recommended follow-up for status / ahp next.
