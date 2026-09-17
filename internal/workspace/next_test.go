@@ -37,7 +37,7 @@ func TestRecommendNextProposals(t *testing.T) {
 		PairwiseProposals: 2,
 	}
 	next := workspace.RecommendNext(s)
-	if next.Kind != "proposals" || next.Command != "ahp commit-proposals" {
+	if next.Kind != "proposals" || next.Command != "ahp plan" {
 		t.Fatalf("got %+v", next)
 	}
 	if workspace.ReadinessExit(s) != cliout.ExitProposals {

@@ -179,8 +179,8 @@ func TestDoctorReportsFixCommands(t *testing.T) {
 	foundFix := false
 	for _, f := range report.Findings {
 		if f.Code == "empty_matrix" || f.Code == "missing_pair" {
-			if f.Fix == "" || !containsStr(f.Fix, "set-pairwise") {
-				t.Fatalf("expected set-pairwise fix, got %+v", f)
+			if f.Fix == "" || !containsStr(f.Fix, "pair set") {
+				t.Fatalf("expected pair set fix, got %+v", f)
 			}
 			foundFix = true
 		}

@@ -199,7 +199,7 @@ func (w *Workspace) Doctor(opts DoctorOptions) (*DoctorReport, error) {
 					Code:     "empty_matrix",
 					Severity: "error",
 					Message:  fmt.Sprintf("matrix %s has no pairwise judgments (%d pairs needed)", key, len(m.Missing)),
-					Fix:      fmt.Sprintf("ahp set-pairwise %s <left> <right> <value>", key),
+					Fix:      fmt.Sprintf("ahp pair set %s <left> <right> <value>", key),
 					Matrix:   key,
 				})
 				continue
@@ -210,7 +210,7 @@ func (w *Workspace) Doctor(opts DoctorOptions) (*DoctorReport, error) {
 					Code:     "missing_pair",
 					Severity: "error",
 					Message:  fmt.Sprintf("missing pair in %s: %s vs %s", key, left, right),
-					Fix:      fmt.Sprintf("ahp set-pairwise %s %s %s <saaty-value>", key, left, right),
+					Fix:      fmt.Sprintf("ahp pair set %s %s %s <saaty-value>", key, left, right),
 					Matrix:   key,
 					Left:     left,
 					Right:    right,
@@ -228,7 +228,7 @@ func (w *Workspace) Doctor(opts DoctorOptions) (*DoctorReport, error) {
 			Code:     "cr_hotspot",
 			Severity: "error",
 			Message:  fmt.Sprintf("matrix %s CR=%.3f exceeds 0.10", key, *m.CR),
-			Fix:      "ahp status  # or set-pairwise with repair suggestions below",
+			Fix:      "ahp pair repairs  # or ahp doctor",
 			Matrix:   key,
 		})
 		for _, h := range m.Repairs {
@@ -237,7 +237,7 @@ func (w *Workspace) Doctor(opts DoctorOptions) (*DoctorReport, error) {
 				Severity: "warn",
 				Message: fmt.Sprintf("repair %s: %s vs %s %s → %s",
 					key, h.Left, h.Right, engine.FormatSaaty(h.Current), engine.FormatSaaty(h.Suggested)),
-				Fix: fmt.Sprintf("ahp set-pairwise %s %s %s %s",
+				Fix: fmt.Sprintf("ahp pair set %s %s %s %s --as proposal",
 					key, h.Left, h.Right, engine.FormatSaaty(h.Suggested)),
 				Matrix: key,
 				Left:   h.Left,
@@ -255,7 +255,7 @@ func (w *Workspace) Doctor(opts DoctorOptions) (*DoctorReport, error) {
 			Code:     "proposals_pending",
 			Severity: sev,
 			Message:  fmt.Sprintf("%d proposal judgment(s) pending", proposals),
-			Fix:      "ahp commit-proposals",
+			Fix:      "ahp plan  # then ahp apply -y",
 		})
 	}
 

@@ -29,13 +29,10 @@ type NextHint struct {
 //
 // Priority (first match wins):
 //  1. structure gaps (no criteria / no alternatives)
-//  2. incomplete matrices → fill pairs via set-pairwise
-//  3. inconsistent CR → validate (repair hints; doctor is the newer alias)
-//  4. proposals pending → commit-proposals
+//  2. incomplete matrices → pair missing / pair set
+//  3. inconsistent CR → pair repairs (doctor for full scan)
+//  4. proposals pending → plan then apply
 //  5. ready → compute, or open if report already exists
-//
-// Current flat verbs are preferred; future aliases (pair / plan / apply) may
-// appear only in comments.
 func RecommendNext(s *StatusSummary) NextAction {
 	if s == nil {
 		return NextAction{
@@ -70,35 +67,32 @@ func RecommendNext(s *StatusSummary) NextAction {
 		}
 		return NextAction{
 			Kind:    "incomplete",
-			Command: "ahp set-pairwise",
+			Command: "ahp pair missing",
 			Reason:  reason,
 			Hints: []NextHint{{
-				Command: "ahp validate",
-				Reason:  "list missing pairs and CR warnings",
-				// future alias: ahp pair missing
+				Command: "ahp pair set",
+				Reason:  "write judgments (agents: --as proposal)",
 			}},
 		}
 	case !s.Consistent:
 		return NextAction{
 			Kind:    "inconsistent",
-			Command: "ahp validate",
+			Command: "ahp pair repairs",
 			Reason:  "review CR repair suggestions (CR > 0.10)",
 			Hints: []NextHint{{
-				Command: "ahp set-pairwise",
-				Reason:  "adjust judgments using validate repair hints",
-				// future alias: ahp pair repairs / ahp doctor
+				Command: "ahp doctor",
+				Reason:  "full workspace diagnostics",
 			}},
 		}
 	case s.PairwiseProposals > 0:
 		n := s.PairwiseProposals
 		return NextAction{
 			Kind:    "proposals",
-			Command: "ahp commit-proposals",
-			Reason:  fmt.Sprintf("commit %d pending proposal(s)", n),
+			Command: "ahp plan",
+			Reason:  fmt.Sprintf("preview committing %d proposal(s)", n),
 			Hints: []NextHint{{
-				Command: "ahp validate",
-				Reason:  "re-check consistency before or after committing",
-				// future aliases: ahp plan / ahp apply
+				Command: "ahp apply -y",
+				Reason:  "commit proposals after review",
 			}},
 		}
 	case reportExists(s.ReportHTML):

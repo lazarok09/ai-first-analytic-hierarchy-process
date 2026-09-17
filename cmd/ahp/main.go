@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 
 	"github.com/lazarok09/ahp-method/internal/cliout"
-	"github.com/lazarok09/ahp-method/internal/engine"
 	ahpmcp "github.com/lazarok09/ahp-method/internal/mcp"
 	"github.com/lazarok09/ahp-method/internal/render"
 	"github.com/lazarok09/ahp-method/internal/workspace"
@@ -34,11 +33,19 @@ func main() {
 		cmdTree(),
 		cmdNext(),
 		cmdOpen(),
-		cmdCommitProposals(),
+		cmdPair(),
+		cmdPlan(),
+		cmdApply(),
+		cmdGet(),
+		cmdDescribe(),
+		cmdCatalog(),
+		cmdDocs(),
+		cmdCompletion(),
+		cmdCommitProposals(), // deprecated alias → apply
 		cmdSetGoal(),
 		cmdAddCriterion(),
 		cmdAddAlternative(),
-		cmdSetPairwise(),
+		cmdSetPairwise(), // deprecated alias → pair set
 		cmdSetAttribute(),
 		cmdMCP(),
 	)
@@ -199,36 +206,6 @@ func cmdOpen() *cobra.Command {
 	return c
 }
 
-func cmdCommitProposals() *cobra.Command {
-	c := &cobra.Command{
-		Use:   "commit-proposals",
-		Short: "Flip proposal judgments to committed",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			matrix, _ := cmd.Flags().GetString("matrix")
-			left, _ := cmd.Flags().GetString("left")
-			right, _ := cmd.Flags().GetString("right")
-			if (left == "") != (right == "") {
-				return fmt.Errorf("provide both --left and --right, or neither")
-			}
-			ws, err := openWS(wsFlag(cmd))
-			if err != nil {
-				return err
-			}
-			updated, err := ws.CommitProposals(matrix, left, right)
-			if err != nil {
-				return err
-			}
-			fmt.Printf("committed %d proposal(s)\n", len(updated))
-			return nil
-		},
-	}
-	addWorkspaceFlag(c)
-	c.Flags().String("matrix", "", "Optional matrix filter")
-	c.Flags().String("left", "", "Optional left id")
-	c.Flags().String("right", "", "Optional right id")
-	return c
-}
-
 func cmdSetGoal() *cobra.Command {
 	c := &cobra.Command{
 		Use:   "set-goal [title]",
@@ -301,37 +278,6 @@ func cmdAddAlternative() *cobra.Command {
 	}
 	addWorkspaceFlag(c)
 	c.Flags().String("description", "", "Description")
-	return c
-}
-
-func cmdSetPairwise() *cobra.Command {
-	c := &cobra.Command{
-		Use:   "set-pairwise [matrix] [left] [right] [value]",
-		Short: "Write a Saaty pairwise judgment",
-		Args:  cobra.ExactArgs(4),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			status, _ := cmd.Flags().GetString("status")
-			note, _ := cmd.Flags().GetString("note")
-			v, err := engine.ParseSaaty(args[3])
-			if err != nil {
-				return err
-			}
-			ws, err := openWS(wsFlag(cmd))
-			if err != nil {
-				return err
-			}
-			if err := ws.UpsertPairwise(workspace.PairwiseRow{
-				Matrix: args[0], Left: args[1], Right: args[2], Value: v, Status: status, Note: note,
-			}); err != nil {
-				return err
-			}
-			fmt.Printf("pairwise %s %s/%s=%s (%s)\n", args[0], args[1], args[2], args[3], status)
-			return nil
-		},
-	}
-	addWorkspaceFlag(c)
-	c.Flags().String("status", "committed", "proposal|committed")
-	c.Flags().String("note", "", "Note")
 	return c
 }
 

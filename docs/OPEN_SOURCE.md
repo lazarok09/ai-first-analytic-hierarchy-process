@@ -130,9 +130,9 @@ Agent rule reminder for contributors ([AGENTS.md](../AGENTS.md)): prefer `ahp st
 [x] Decide history strategy (keep vs Go-only root)
 [x] Secret hygiene (.env, scan)
 [x] Align go.mod / imports / README install
-[ ] CI green on PR + main
+[ ] CI green on PR + main          # workflows committed; needs push + GitHub Actions
 [x] CONTRIBUTING + SECURITY + CHANGELOG (+ CoC)
-[ ] GoReleaser + tag v0.3.0
+[ ] GoReleaser + tag v0.3.0        # config committed; needs auth + push tag
 [ ] Make repo public + GitHub Release
 [ ] Verify go install + pkg.go.dev
 [ ] Announce + watch first issues

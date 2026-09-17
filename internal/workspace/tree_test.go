@@ -47,13 +47,13 @@ func TestRecommendNextPriorityOrder(t *testing.T) {
 			Criteria: 2, Alternatives: 2, Complete: false,
 			Missing: []workspace.MissingPair{{Matrix: "criteria", Left: "a", Right: "b"}},
 			Consistent: false, PairwiseProposals: 9,
-		}, "incomplete", "ahp set-pairwise"},
+		}, "incomplete", "ahp pair missing"},
 		{"inconsistent", workspace.StatusSummary{
 			Criteria: 2, Alternatives: 2, Complete: true, Consistent: false, PairwiseProposals: 9,
-		}, "inconsistent", "ahp validate"},
+		}, "inconsistent", "ahp pair repairs"},
 		{"proposals", workspace.StatusSummary{
 			Criteria: 2, Alternatives: 2, Complete: true, Consistent: true, PairwiseProposals: 2,
-		}, "proposals", "ahp commit-proposals"},
+		}, "proposals", "ahp plan"},
 		{"ready", workspace.StatusSummary{
 			Criteria: 2, Alternatives: 2, Complete: true, Consistent: true,
 			ReportHTML: filepath.Join(t.TempDir(), "gone.html"),
