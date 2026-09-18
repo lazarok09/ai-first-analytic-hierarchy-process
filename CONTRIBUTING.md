@@ -41,6 +41,19 @@ go build -o bin/ahp ./cmd/ahp
 3. Smoke: `go build -o ahp ./cmd/ahp && ./ahp compute -w examples/vendor-selection`.
 4. Document user-facing CLI/MCP changes in `CHANGELOG.md` under Unreleased.
 
+## Releases
+
+Tagged `v*` pushes run GoReleaser. Commit-level release notes come from
+[`goreleaser/chglog`](https://github.com/goreleaser/chglog) (`changelog.yml`).
+
+```bash
+go install github.com/goreleaser/chglog/cmd/chglog@v0.7.4
+# after tagging workflow is established:
+chglog add --version vX.Y.Z
+chglog format -t repo  # preview; keep CHANGELOG.md curated for humans
+./scripts/gen-release-notes.sh   # preview body attached to the GitHub Release
+```
+
 ## Code of conduct
 
 Participation is governed by [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md).

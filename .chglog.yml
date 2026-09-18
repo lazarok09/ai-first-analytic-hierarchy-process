@@ -1,0 +1,8 @@
+conventional-commits: false
+exclude-merge-commits: true
+deb:
+  distribution: []
+  urgency: ""
+debug: false
+owner: Lazaro Souza
+package-name: ahp

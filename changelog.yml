@@ -1,0 +1,164 @@
+- semver: 0.3.0
+  date: 2026-09-17T13:30:58-03:00
+  packager: lazarok09 <lazarok09@gmail.com>
+  changes:
+    - commit: 3f5207b57ae5884949f8da194a464cdcd8581cc8
+      note: |-
+        Rewrite the README for a clear OSS-first landing page.
+
+        Co-authored-by: Cursor <cursoragent@cursor.com>
+      author:
+        name: lazarok09
+        email: lazarok09@gmail.com
+      committer:
+        name: lazarok09
+        email: lazarok09@gmail.com
+    - commit: 918e6c9addb2bd0561f5dc44af9557e667d78eef
+      note: |-
+        Ignore the local root ahp binary build artifact.
+
+        Co-authored-by: Cursor <cursoragent@cursor.com>
+      author:
+        name: lazarok09
+        email: lazarok09@gmail.com
+      committer:
+        name: lazarok09
+        email: lazarok09@gmail.com
+    - commit: 627483bff2ab794de395cd35fc35ecfb5254f6e1
+      note: |-
+        Close headphone dogfood CLI gaps for purchase workflows.
+
+        Add rate --refresh, attribute constraints with synthesis exclusion, doctor --purchase integrity, quieter apply, and pair import so agents can keep BR street-price decisions consistent without leaving the CLI.
+
+        Co-authored-by: Cursor <cursoragent@cursor.com>
+      author:
+        name: lazarok09
+        email: lazarok09@gmail.com
+      committer:
+        name: lazarok09
+        email: lazarok09@gmail.com
+    - commit: ef68de499100ded2f1a638c49277dc40e7a23364
+      note: |-
+        Add BR headphone dogfood workspace with local street prices.
+
+        Keep the R$200–400 audio-interface shortlist as a reproducible AHP example so price-integrity checks and ranking can be replayed without regenerated outputs.
+
+        Co-authored-by: Cursor <cursoragent@cursor.com>
+      author:
+        name: lazarok09
+        email: lazarok09@gmail.com
+      committer:
+        name: lazarok09
+        email: lazarok09@gmail.com
+    - commit: 1978c6fb73be01478131669d1f4d503c0ea7d469
+      note: |-
+        Add explain, sensitivity, and attribute-to-proposal bridges.
+
+        Ship Phase B decision-quality commands and an opt-in L1 path from numeric attributes to Saaty proposals so close rankings and objective facts stay inside ahp.
+
+        Co-authored-by: Cursor <cursoragent@cursor.com>
+      author:
+        name: lazarok09
+        email: lazarok09@gmail.com
+      committer:
+        name: lazarok09
+        email: lazarok09@gmail.com
+    - commit: 6dc6a6ed5dd785476b608a4597c3eb7fa00bd54f
+      note: |-
+        Fix status readiness so agents stop misreading empty or proposal-filled workspaces.
+
+        Structure-aware complete, proposal coverage on pair missing, and ranking_mode labels address the P0 gaps from the headphone dogfood.
+
+        Co-authored-by: Cursor <cursoragent@cursor.com>
+      author:
+        name: lazarok09
+        email: lazarok09@gmail.com
+      committer:
+        name: lazarok09
+        email: lazarok09@gmail.com
+    - commit: e9bf1d454472ef82227eb12d7ee6c08942734497
+      note: |-
+        Ship Phase A judgment and inspect surface: pair, plan, apply, get, catalog.
+
+        Give humans and agents a terraform-style proposal workflow plus kubectl-style inspect and a shared command catalog, with agent defaults that never silent-commit.
+
+        Co-authored-by: Cursor <cursoragent@cursor.com>
+      author:
+        name: lazarok09
+        email: lazarok09@gmail.com
+      committer:
+        name: lazarok09
+        email: lazarok09@gmail.com
+    - commit: fa7ad67704953ea539b5cc40f2a28194c449927f
+      note: |-
+        Prepare the CLI for public open-source publishing.
+
+        Align the module path to lazarok09/ahp-method, add CI/GoReleaser and community docs so go install and releases match the GitHub identity.
+
+        Co-authored-by: Cursor <cursoragent@cursor.com>
+      author:
+        name: lazarok09
+        email: lazarok09@gmail.com
+      committer:
+        name: lazarok09
+        email: lazarok09@gmail.com
+    - commit: 30fb7eeb5d92962858a54489d3851aabd07c4f64
+      note: |-
+        Ship Phase A orientation: status, doctor, tree, next, and cliout.
+
+        Give the CLI a git-like home screen with actionable next steps, shared JSON/TTY output, and readiness exit codes so humans and agents can drive the workspace without reading the README.
+
+        Co-authored-by: Cursor <cursoragent@cursor.com>
+      author:
+        name: lazarok09
+        email: lazarok09@gmail.com
+      committer:
+        name: lazarok09
+        email: lazarok09@gmail.com
+    - commit: cac484c40d95fd266ba33923b4b9af1cdd93cade
+      note: |-
+        Document SOTA CLI roadmap with command-as-doc catalog plan.
+
+        Capture phased gaps (parity, math, UX) so docs stay the planning source of truth.
+
+        Co-authored-by: Cursor <cursoragent@cursor.com>
+      author:
+        name: lazarok09
+        email: lazarok09@gmail.com
+      committer:
+        name: lazarok09
+        email: lazarok09@gmail.com
+    - commit: b5779f6abcb73d6ac86a7a684b7c24338807a6f5
+      note: |-
+        Replace Next.js/Python stack with a local Go AHP CLI and MCP.
+
+        CSV workspaces are the source of truth; agents propose judgments and humans commit, with shared engine math for ranking and consistency repairs.
+
+        Co-authored-by: Cursor <cursoragent@cursor.com>
+      author:
+        name: lazarok09
+        email: lazarok09@gmail.com
+      committer:
+        name: lazarok09
+        email: lazarok09@gmail.com
+    - commit: 98575aa12550beaed6eb2f1c4810a4d921fc8beb
+      note: |-
+        Ship AI-first AHP MVP with ChatKit agent, REST/MCP, and UI.
+
+        Bootstrap the Next.js/Bun app: Drizzle schema, Auth.js, domain REST + MCP tools, in-app ChatKit sidecar, criteria/pairwise/snapshots UI, and en/pt-BR docs.
+
+        Co-authored-by: Cursor <cursoragent@cursor.com>
+      author:
+        name: lazarok09
+        email: lazarok09@gmail.com
+      committer:
+        name: lazarok09
+        email: lazarok09@gmail.com
+    - commit: cfd2008d8d6dec1c1f1b5e8d562dd6c317070b0c
+      note: Initial commit
+      author:
+        name: Lazaro Souza
+        email: lazarok09@gmail.com
+      committer:
+        name: GitHub
+        email: noreply@github.com

@@ -17,3 +17,7 @@ examples/**/output/
 
 # Local Playwright MCP captures
 .playwright-mcp/
+
+# Generated release notes (CI regenerates from changelog.yml)
+.release-notes.md
+.chglog-repo.md

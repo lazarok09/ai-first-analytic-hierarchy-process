@@ -37,12 +37,9 @@ archives:
 checksum:
   name_template: checksums.txt
 
+# Release body comes from goreleaser/chglog via --release-notes in CI.
 changelog:
-  sort: asc
-  filters:
-    exclude:
-      - "^docs:"
-      - "^test:"
+  disable: true
 
 release:
   draft: false
