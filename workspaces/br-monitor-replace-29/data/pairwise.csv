@@ -1,0 +1,41 @@
+matrix,left,right,value,status,note
+criteria,panel,response,1,committed,Both extremely important per user
+criteria,panel,clarity,5,committed,Panel quality strongly over size/res upgrade
+criteria,panel,refresh,7,committed,Panel >> Hz
+criteria,panel,value,4,committed,Panel over price inside budget
+criteria,response,clarity,5,committed,Response strongly over clarity
+criteria,response,refresh,5,committed,True motion clarity over raw Hz
+criteria,response,value,4,committed,Response over price inside budget
+criteria,clarity,refresh,2,committed,Upgrade from 29in 1080p slightly over Hz
+criteria,clarity,value,2,committed,Clarity slightly over price
+criteria,refresh,value,1,committed,Hz and price roughly equal secondary
+alt:panel,msi_mag274qrf_qd,asus_pa278cgrv,1,committed,QD wide gamut vs Calman accuracy — both top-tier panels
+alt:panel,msi_mag274qrf_qd,asus_xg27acs,3,committed,QD Rapid IPS / ~98% DCI-P3 over Fast IPS 97%
+alt:panel,msi_mag274qrf_qd,gigabyte_g27q2,4,committed,QD + wider color volume over SS IPS ~95% DCI-P3
+alt:panel,asus_pa278cgrv,asus_xg27acs,3,committed,Calman ΔE<2 factory calib over gaming Fast IPS
+alt:panel,asus_pa278cgrv,gigabyte_g27q2,4,committed,ProArt accuracy/calibration over G27Q2
+alt:panel,asus_xg27acs,gigabyte_g27q2,2,committed,97% DCI-P3 HDR400 Fast IPS slightly over SS IPS 95%
+alt:response,gigabyte_g27q2,asus_xg27acs,2,committed,210Hz + 0.5ms SS IPS slight motion edge vs 180Hz Fast IPS
+alt:response,gigabyte_g27q2,msi_mag274qrf_qd,2,committed,Slight Hz/claimed GtG edge; same Fast/Rapid IPS class
+alt:response,asus_xg27acs,msi_mag274qrf_qd,1,committed,Both 180Hz 1ms Fast/Rapid IPS class
+alt:response,gigabyte_g27q2,asus_pa278cgrv,7,committed,Fast SS IPS gaming response >> ProArt creative IPS
+alt:response,asus_xg27acs,asus_pa278cgrv,7,committed,Fast IPS 1ms >> ProArt
+alt:response,msi_mag274qrf_qd,asus_pa278cgrv,7,committed,Rapid IPS 1ms >> ProArt
+alt:clarity,gigabyte_g27q2,asus_xg27acs,1,committed,same 27 QHD
+alt:clarity,gigabyte_g27q2,msi_mag274qrf_qd,1,committed,same 27 QHD
+alt:clarity,gigabyte_g27q2,asus_pa278cgrv,1,committed,same 27 QHD
+alt:clarity,asus_xg27acs,msi_mag274qrf_qd,1,committed,same 27 QHD
+alt:clarity,asus_xg27acs,asus_pa278cgrv,1,committed,same 27 QHD
+alt:clarity,msi_mag274qrf_qd,asus_pa278cgrv,1,committed,same 27 QHD
+alt:value,asus_pa278cgrv,asus_xg27acs,1/2,committed,from attributes (lower-better): asus_pa278cgrv=2100 vs asus_xg27acs=1300 → pref ratio 0.619 → Saaty 1/2
+alt:value,asus_pa278cgrv,gigabyte_g27q2,1/2,committed,from attributes (lower-better): asus_pa278cgrv=2100 vs gigabyte_g27q2=1250 → pref ratio 0.595 → Saaty 1/2
+alt:value,asus_pa278cgrv,msi_mag274qrf_qd,1,committed,from attributes (lower-better): asus_pa278cgrv=2100 vs msi_mag274qrf_qd=2430 → pref ratio 1.16 → Saaty 1
+alt:value,asus_xg27acs,gigabyte_g27q2,1,committed,from attributes (lower-better): asus_xg27acs=1300 vs gigabyte_g27q2=1250 → pref ratio 0.962 → Saaty 1
+alt:value,asus_xg27acs,msi_mag274qrf_qd,2,committed,from attributes (lower-better): asus_xg27acs=1300 vs msi_mag274qrf_qd=2430 → pref ratio 1.87 → Saaty 2
+alt:value,gigabyte_g27q2,msi_mag274qrf_qd,2,committed,from attributes (lower-better): gigabyte_g27q2=1250 vs msi_mag274qrf_qd=2430 → pref ratio 1.94 → Saaty 2
+alt:refresh,asus_pa278cgrv,asus_xg27acs,1,committed,from attributes (higher-better): asus_pa278cgrv=144 vs asus_xg27acs=180 → ratio 0.8 → Saaty 1
+alt:refresh,asus_pa278cgrv,gigabyte_g27q2,1/2,committed,from attributes (higher-better): asus_pa278cgrv=144 vs gigabyte_g27q2=210 → ratio 0.686 → Saaty 1/2
+alt:refresh,asus_pa278cgrv,msi_mag274qrf_qd,1,committed,from attributes (higher-better): asus_pa278cgrv=144 vs msi_mag274qrf_qd=180 → ratio 0.8 → Saaty 1
+alt:refresh,asus_xg27acs,gigabyte_g27q2,1,committed,from attributes (higher-better): asus_xg27acs=180 vs gigabyte_g27q2=210 → ratio 0.857 → Saaty 1
+alt:refresh,asus_xg27acs,msi_mag274qrf_qd,1,committed,from attributes (higher-better): asus_xg27acs=180 vs msi_mag274qrf_qd=180 → ratio 1 → Saaty 1
+alt:refresh,gigabyte_g27q2,msi_mag274qrf_qd,1,committed,from attributes (higher-better): gigabyte_g27q2=210 vs msi_mag274qrf_qd=180 → ratio 1.17 → Saaty 1

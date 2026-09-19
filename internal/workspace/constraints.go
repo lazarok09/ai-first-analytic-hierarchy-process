@@ -12,12 +12,15 @@ import (
 
 // Constraint is an attribute eligibility rule (hard filter before ranking).
 type Constraint struct {
-	CriterionID string  `json:"criterion_id"`
+	CriterionID string   `json:"criterion_id"`
 	Min         *float64 `json:"min,omitempty"`
 	Max         *float64 `json:"max,omitempty"`
-	Unit        string  `json:"unit"`
-	Prefer      string  `json:"prefer,omitempty"` // higher|lower — used by purchase integrity
-	Note        string  `json:"note,omitempty"`
+	Unit        string   `json:"unit"`
+	Prefer      string   `json:"prefer,omitempty"` // higher|lower — used by purchase integrity
+	// MustHave requires a truthy attribute (1/true/yes/sim or numeric > 0).
+	// Used for facility filters like parking without inventing a fake min/max band.
+	MustHave bool   `json:"must_have,omitempty"`
+	Note     string `json:"note,omitempty"`
 }
 
 // ConstraintViolation is one alternative failing a constraint.
@@ -44,6 +47,7 @@ func (w *Workspace) Constraints() ([]Constraint, error) {
 			CriterionID: id,
 			Unit:        strings.TrimSpace(r["unit"]),
 			Prefer:      strings.TrimSpace(r["prefer"]),
+			MustHave:    parseTruthyFlag(r["must_have"]),
 			Note:        strings.TrimSpace(r["note"]),
 		}
 		if v, ok, err := parseOptFloat(r["min"]); err != nil {
@@ -71,6 +75,9 @@ func (w *Workspace) WriteConstraints(items []Constraint) error {
 			"prefer":       c.Prefer,
 			"note":         c.Note,
 		}
+		if c.MustHave {
+			row["must_have"] = "true"
+		}
 		if c.Min != nil {
 			row["min"] = strconv.FormatFloat(*c.Min, 'f', -1, 64)
 		}
@@ -80,7 +87,7 @@ func (w *Workspace) WriteConstraints(items []Constraint) error {
 		rows = append(rows, row)
 	}
 	return writeCSV(w.dataPath("constraints.csv"),
-		[]string{"criterion_id", "min", "max", "unit", "prefer", "note"}, rows)
+		[]string{"criterion_id", "min", "max", "unit", "prefer", "must_have", "note"}, rows)
 }
 
 // UpsertConstraint creates or replaces a constraint for a criterion.
@@ -93,6 +100,9 @@ func (w *Workspace) UpsertConstraint(item Constraint) error {
 	}
 	if item.Min != nil && item.Max != nil && *item.Min > *item.Max {
 		return fmt.Errorf("min %.4g > max %.4g", *item.Min, *item.Max)
+	}
+	if !item.MustHave && item.Min == nil && item.Max == nil && item.Unit == "" {
+		return fmt.Errorf("provide --must-have and/or --min/--max/--unit")
 	}
 	items, err := w.Constraints()
 	if err != nil {
@@ -141,6 +151,18 @@ func (w *Workspace) EvaluateConstraints() ([]ConstraintViolation, error) {
 					Reason: "missing attribute for constrained criterion",
 				})
 				continue
+			}
+			if c.MustHave {
+				if !AttributeIsTruthy(at.Value) {
+					out = append(out, ConstraintViolation{
+						AlternativeID: alt.ID, CriterionID: c.CriterionID,
+						Reason: fmt.Sprintf("must-have failed (value %q is falsy)", at.Value),
+					})
+				}
+				// must-have alone: skip numeric band checks unless min/max/unit also set
+				if c.Min == nil && c.Max == nil && c.Unit == "" {
+					continue
+				}
 			}
 			v, err := engine.ParseNumericAttribute(at.Value)
 			if err != nil {
@@ -197,6 +219,33 @@ func (w *Workspace) EligibleAlternativeIDs() ([]string, []ConstraintViolation, e
 		}
 	}
 	return ok, violations, nil
+}
+
+// AttributeIsTruthy reports whether an attribute value counts as present/true
+// for must-have constraints (parking, breakfast, etc.).
+func AttributeIsTruthy(raw string) bool {
+	s := strings.TrimSpace(strings.ToLower(raw))
+	switch s {
+	case "", "0", "false", "no", "n", "não", "nao", "off", "none", "null":
+		return false
+	case "1", "true", "yes", "y", "sim", "on":
+		return true
+	}
+	if v, err := engine.ParseNumericAttribute(raw); err == nil {
+		return v > 0
+	}
+	// Non-empty free text (e.g. "gratis", "privado") counts as present.
+	return s != ""
+}
+
+func parseTruthyFlag(raw string) bool {
+	s := strings.TrimSpace(strings.ToLower(raw))
+	switch s {
+	case "1", "true", "yes", "y", "sim":
+		return true
+	default:
+		return false
+	}
 }
 
 func parseOptFloat(raw string) (float64, bool, error) {

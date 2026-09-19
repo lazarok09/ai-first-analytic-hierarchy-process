@@ -20,7 +20,9 @@ proposal judgments on matrix alt:C using ratio→nearest-Saaty mapping.
 
   --prefer lower   smaller attribute wins (price / risk weeks)
   --prefer higher  larger attribute wins (quality scores)
+  --stretch        affine-shift so tight bands (e.g. 8.4 vs 9.5) discriminate
 
+Non-positive attributes (e.g. amenities=0) are allowed via an automatic affine shift.
 Use --refresh to demote committed pairs back to proposals when attributes change
 (never auto-commits). Alias of: ahp pair suggest-from-attributes`,
 		SilenceUsage:  true,
@@ -52,6 +54,7 @@ func addSuggestFromAttributesFlags(c *cobra.Command) {
 	c.Flags().String("prefer", "higher", "higher|lower — which attribute direction wins")
 	c.Flags().Bool("dry-run", false, "Preview proposals without writing pairwise.csv")
 	c.Flags().Bool("refresh", false, "Rewrite matching pairs as proposals even if committed")
+	c.Flags().Bool("stretch", false, "Affine-shift attributes so tight numeric bands discriminate on Saaty")
 	_ = c.MarkFlagRequired("criterion")
 }
 
@@ -60,6 +63,7 @@ func runSuggestFromAttributes(cmd *cobra.Command, args []string) error {
 	preferRaw, _ := cmd.Flags().GetString("prefer")
 	dry, _ := cmd.Flags().GetBool("dry-run")
 	refresh, _ := cmd.Flags().GetBool("refresh")
+	stretch, _ := cmd.Flags().GetBool("stretch")
 	p := cliout.FromCmd(cmd)
 	ws, err := openWS(wsFlag(cmd))
 	if err != nil {
@@ -71,6 +75,7 @@ func runSuggestFromAttributes(cmd *cobra.Command, args []string) error {
 		Prefer:      prefer,
 		DryRun:      dry,
 		Refresh:     refresh,
+		Stretch:     stretch,
 	})
 	if err != nil {
 		return cliout.Wrap(cliout.ExitUsage, err)

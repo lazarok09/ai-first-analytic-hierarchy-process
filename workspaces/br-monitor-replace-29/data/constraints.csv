@@ -1,0 +1,2 @@
+criterion_id,min,max,unit,prefer,note
+value,800,2500,BRL,lower,BR street prices; exclude below typical QHD floor and above R$2500

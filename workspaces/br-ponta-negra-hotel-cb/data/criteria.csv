@@ -1,0 +1,5 @@
+id,name,parent_id,description
+amenities,Comodidades,,1=nenhum 2=piscina ou café
+location,Localização,,Nota loc Booking (score-8)
+quality,Nota hóspedes,,Score Booking (score-7 p/ Saaty)
+value,Preço,,Total 2 noites BRL — menor melhor

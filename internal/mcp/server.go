@@ -350,6 +350,7 @@ func Run() error {
 		mcp.WithString("prefer", mcp.Description("higher|lower"), mcp.DefaultString("higher")),
 		mcp.WithBoolean("dry_run"),
 		mcp.WithBoolean("refresh"),
+		mcp.WithBoolean("stretch"),
 		mcp.WithString("workspace"),
 	), wrap(func(args map[string]any) (any, error) {
 		ws, err := open(args)
@@ -362,16 +363,18 @@ func Run() error {
 			Prefer:      prefer,
 			DryRun:      boolArg(args, "dry_run"),
 			Refresh:     boolArg(args, "refresh"),
+			Stretch:     boolArg(args, "stretch"),
 		})
 	}))
 
 	s.AddTool(mcp.NewTool("constrain",
-		mcp.WithDescription("Set or list attribute eligibility constraints (min/max/unit). Out-of-band alternatives are excluded from synthesis."),
+		mcp.WithDescription("Set or list attribute eligibility constraints (min/max/unit/must_have). Out-of-band alternatives are excluded from synthesis."),
 		mcp.WithString("criterion_id", mcp.Description("Omit to list constraints")),
 		mcp.WithNumber("min"),
 		mcp.WithNumber("max"),
 		mcp.WithString("unit"),
 		mcp.WithString("prefer", mcp.Description("higher|lower")),
+		mcp.WithBoolean("must_have"),
 		mcp.WithString("note"),
 		mcp.WithString("workspace"),
 	), wrap(func(args map[string]any) (any, error) {
@@ -387,6 +390,7 @@ func Run() error {
 			CriterionID: crit,
 			Unit:        strArg(args, "unit", ""),
 			Prefer:      strArg(args, "prefer", ""),
+			MustHave:    boolArg(args, "must_have"),
 			Note:        strArg(args, "note", ""),
 		}
 		if _, ok := args["min"]; ok {
@@ -401,6 +405,32 @@ func Run() error {
 			return nil, err
 		}
 		return item, nil
+	}))
+
+	s.AddTool(mcp.NewTool("remove_alternative",
+		mcp.WithDescription("Delete an alternative and clean attributes + pairwise that reference it."),
+		mcp.WithString("alternative_id", mcp.Required()),
+		mcp.WithString("workspace"),
+	), wrap(func(args map[string]any) (any, error) {
+		ws, err := open(args)
+		if err != nil {
+			return nil, err
+		}
+		return ws.RemoveAlternative(strArg(args, "alternative_id", ""))
+	}))
+
+	s.AddTool(mcp.NewTool("share",
+		mcp.WithDescription("Pasteable ranking summary with attribute highlights and URLs (WhatsApp-friendly text)."),
+		mcp.WithNumber("top", mcp.Description("How many alternatives (default 5)")),
+		mcp.WithBoolean("include_proposals"),
+		mcp.WithString("workspace"),
+	), wrap(func(args map[string]any) (any, error) {
+		ws, err := open(args)
+		if err != nil {
+			return nil, err
+		}
+		top := int(floatArg(args, "top", 5))
+		return ws.Share(boolArg(args, "include_proposals"), top)
 	}))
 
 	s.AddTool(mcp.NewTool("import_pairwise",

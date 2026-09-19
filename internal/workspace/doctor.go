@@ -222,6 +222,10 @@ func (w *Workspace) Doctor(opts DoctorOptions) (*DoctorReport, error) {
 		}
 	}
 
+	// Attributes present but alt:<criterion> never rated → agents often leave
+	// equal-weight fallback after a failed rate. Point them at ahp rate.
+	report.Findings = append(report.Findings, w.attrsUnratedFindings(result)...)
+
 	// CR hotspots (only for complete matrices).
 	for key, m := range result.Matrices {
 		if !m.Complete || m.CR == nil || *m.CR <= engine.CRAccept {
@@ -413,6 +417,67 @@ func pairwiseIDFindings(p PairwiseRow, critIDs, altIDs map[string]struct{}) []Fi
 			Right:    p.Right,
 		})
 	}
+	return out
+}
+
+// attrsUnratedFindings warns when ≥2 alternatives have numeric attributes for a
+// criterion but matrix alt:<criterion> has no judgments at all.
+func (w *Workspace) attrsUnratedFindings(_ *ComputeResult) []Finding {
+	attrs, err := w.Attributes()
+	if err != nil || len(attrs) == 0 {
+		return nil
+	}
+	byCrit := map[string]map[string]bool{}
+	for _, a := range attrs {
+		if strings.TrimSpace(a.Value) == "" {
+			continue
+		}
+		if _, err := engine.ParseNumericAttribute(a.Value); err != nil {
+			continue
+		}
+		if byCrit[a.CriterionID] == nil {
+			byCrit[a.CriterionID] = map[string]bool{}
+		}
+		byCrit[a.CriterionID][a.AlternativeID] = true
+	}
+	pairs, err := w.Pairwise()
+	if err != nil {
+		return nil
+	}
+	hasPair := map[string]bool{}
+	for _, p := range pairs {
+		if strings.HasPrefix(p.Matrix, "alt:") {
+			hasPair[p.Matrix] = true
+		}
+	}
+	var out []Finding
+	for crit, alts := range byCrit {
+		if len(alts) < 2 {
+			continue
+		}
+		matrix := "alt:" + crit
+		if hasPair[matrix] {
+			continue
+		}
+		// Prefer pointing at rate; stretch helps tight bands from hotel dogfood.
+		prefer := "higher"
+		if cons, err := w.Constraints(); err == nil {
+			for _, c := range cons {
+				if c.CriterionID == crit && c.Prefer != "" {
+					prefer = c.Prefer
+					break
+				}
+			}
+		}
+		out = append(out, Finding{
+			Code:     "attrs_unrated",
+			Severity: "warn",
+			Message:  fmt.Sprintf("%d alternatives have numeric attributes on %q but matrix %s has no judgments — ranking may use equal-weight fallback", len(alts), crit, matrix),
+			Fix:      fmt.Sprintf("ahp rate --criterion %s --prefer %s [--stretch] && ahp plan", crit, prefer),
+			Matrix:   matrix,
+		})
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].Matrix < out[j].Matrix })
 	return out
 }
 

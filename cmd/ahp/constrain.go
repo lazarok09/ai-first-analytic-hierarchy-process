@@ -17,6 +17,7 @@ func cmdConstrain() *cobra.Command {
 synthesis and flagged by ahp doctor.
 
   ahp constrain value --min 200 --max 400 --unit BRL --prefer lower
+  ahp constrain parking --must-have   # require truthy attribute (1/true/yes)
 
 Omit flags to list current constraints. Prefer is used by purchase integrity.`,
 		Args:          cobra.MaximumNArgs(1),
@@ -29,6 +30,7 @@ Omit flags to list current constraints. Prefer is used by purchase integrity.`,
 	c.Flags().String("max", "", "Maximum allowed attribute value")
 	c.Flags().String("unit", "", "Required attribute unit (e.g. BRL)")
 	c.Flags().String("prefer", "", "higher|lower for purchase direction checks")
+	c.Flags().Bool("must-have", false, "Require truthy attribute (parking/breakfast-style filter)")
 	c.Flags().String("note", "", "Optional note")
 	return c
 }
@@ -53,8 +55,8 @@ func runConstrain(cmd *cobra.Command, args []string) error {
 			return nil
 		}
 		for _, c := range items {
-			fmt.Fprintf(cmd.OutOrStdout(), "%s  min=%s max=%s unit=%s prefer=%s\n",
-				c.CriterionID, fmtOptF(c.Min), fmtOptF(c.Max), c.Unit, c.Prefer)
+			fmt.Fprintf(cmd.OutOrStdout(), "%s  min=%s max=%s unit=%s prefer=%s must_have=%v\n",
+				c.CriterionID, fmtOptF(c.Min), fmtOptF(c.Max), c.Unit, c.Prefer, c.MustHave)
 		}
 		return nil
 	}
@@ -64,9 +66,10 @@ func runConstrain(cmd *cobra.Command, args []string) error {
 	maxRaw, _ := cmd.Flags().GetString("max")
 	unit, _ := cmd.Flags().GetString("unit")
 	prefer, _ := cmd.Flags().GetString("prefer")
+	mustHave, _ := cmd.Flags().GetBool("must-have")
 	note, _ := cmd.Flags().GetString("note")
 
-	item := workspace.Constraint{CriterionID: crit, Unit: unit, Prefer: prefer, Note: note}
+	item := workspace.Constraint{CriterionID: crit, Unit: unit, Prefer: prefer, MustHave: mustHave, Note: note}
 	if minRaw != "" {
 		v, err := strconv.ParseFloat(minRaw, 64)
 		if err != nil {
@@ -81,8 +84,8 @@ func runConstrain(cmd *cobra.Command, args []string) error {
 		}
 		item.Max = &v
 	}
-	if item.Min == nil && item.Max == nil && unit == "" {
-		return cliout.NewExitError(cliout.ExitUsage, "provide at least --min, --max, or --unit")
+	if !item.MustHave && item.Min == nil && item.Max == nil && unit == "" {
+		return cliout.NewExitError(cliout.ExitUsage, "provide --must-have and/or --min, --max, or --unit")
 	}
 
 	criteria, err := ws.Criteria()
@@ -106,8 +109,8 @@ func runConstrain(cmd *cobra.Command, args []string) error {
 	if p.JSON {
 		return p.PrintJSON(item)
 	}
-	fmt.Fprintf(cmd.OutOrStdout(), "constraint  %s  min=%s max=%s unit=%s prefer=%s\n",
-		item.CriterionID, fmtOptF(item.Min), fmtOptF(item.Max), item.Unit, item.Prefer)
+	fmt.Fprintf(cmd.OutOrStdout(), "constraint  %s  min=%s max=%s unit=%s prefer=%s must_have=%v\n",
+		item.CriterionID, fmtOptF(item.Min), fmtOptF(item.Max), item.Unit, item.Prefer, item.MustHave)
 	fmt.Fprintln(cmd.OutOrStdout(), "Next:  ahp doctor   # then ahp compute / status")
 	return nil
 }

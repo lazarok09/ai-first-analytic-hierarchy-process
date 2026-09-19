@@ -1,0 +1,29 @@
+alternative_id,criterion_id,value,unit,source,note
+economy_apart,value,271,BRL,Booking.com,2 noites; park grátis. 2026-09-18
+ponta_negra_flat,value,310,BRL,Booking.com,2 noites; park grátis + piscina. 2026-09-18
+macarena,value,360,BRL,Booking.com,2 noites; park grátis. 2026-09-18
+apto_209,value,420,BRL,Booking.com,2 noites; park grátis + piscina. 2026-09-18
+natal_sun,value,442,BRL,Booking.com,2 noites; park grátis. 2026-09-18
+mar_e_brisa,value,500,BRL,Booking.com,2 noites c/ café; park PAGO no local. Decolar Pix ~432 em cotação anterior — Booking confirmado hoje. 2026-09-18
+economy_apart,quality,1.5,score-7,Booking.com,"8,5"
+ponta_negra_flat,quality,1.8,score-7,Booking.com,"8,8"
+swell,quality,1.4,score-7,Booking.com,"8,4"
+macarena,quality,2.1,score-7,Booking.com,"9,1"
+apto_209,quality,2.5,score-7,Booking.com,"9,5 / 59 aval."
+natal_sun,quality,2.0,score-7,Booking.com,"9,0"
+mar_e_brisa,quality,1.6,score-7,Booking.com,"8,6"
+economy_apart,location,1.5,score-8,Booking.com,"9,5"
+ponta_negra_flat,location,1.7,score-8,Booking.com,"9,7"
+swell,location,1.4,score-8,Booking.com,"9,4"
+macarena,location,1.5,score-8,Booking.com,"9,5"
+apto_209,location,1.8,score-8,Booking.com,"9,8"
+natal_sun,location,1.4,score-8,Booking.com,"loc não destacada na card; PN — proxy 9,4"
+mar_e_brisa,location,1.3,score-8,Booking.com,"9,3"
+economy_apart,amenities,1,count,Booking.com,só park
+ponta_negra_flat,amenities,2,count,Booking.com,piscina
+swell,amenities,1,count,Booking.com,só park
+macarena,amenities,1,count,Booking.com,só park na oferta filtrada
+apto_209,amenities,2,count,Booking.com,piscina
+natal_sun,amenities,2,count,Booking.com,piscina
+mar_e_brisa,amenities,2,count,Booking.com,café incluso
+swell,value,353,BRL,Decolar Pix,picked from 2 quote(s); prefer=lower https://www.decolar.com/hoteis/h-7319753/swell-praia-hotel-natal?checkin=2026-09-25&checkout=2026-09-27&adults=2; discarded: Booking.com=600

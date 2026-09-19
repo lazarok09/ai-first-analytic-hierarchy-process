@@ -63,10 +63,11 @@ var entries = []Entry{
 	},
 	{
 		ID: "constrain", CLI: "ahp constrain", MCP: "constrain",
-		Short: "Set attribute eligibility band (min/max/unit)",
-		Long:  "Writes data/constraints.csv; out-of-band alts are excluded from synthesis.",
+		Short: "Set attribute eligibility band (min/max/unit) or --must-have",
+		Long:  "Writes data/constraints.csv; out-of-band alts are excluded from synthesis. Use --must-have for parking-style truthy filters.",
 		Examples: []string{
 			"ahp constrain value --min 200 --max 400 --unit BRL --prefer lower",
+			"ahp constrain parking --must-have",
 			"ahp constrain --json",
 		},
 	},
@@ -154,9 +155,10 @@ var entries = []Entry{
 	{
 		ID: "rate", CLI: "ahp rate", MCP: "suggest_from_attributes",
 		Short: "Opt-in: attributes → Saaty pairwise proposals (never commits)",
-		Long:  "Alias of ahp pair suggest-from-attributes. Use --prefer lower for price-like criteria; --refresh demotes committed→proposal.",
+		Long:  "Alias of ahp pair suggest-from-attributes. Use --prefer lower for price; --stretch for tight bands; zeros allowed via affine shift; --refresh demotes committed→proposal.",
 		Examples: []string{
 			"ahp rate --criterion value --prefer lower --dry-run",
+			"ahp rate --criterion quality --prefer higher --stretch",
 			"ahp rate --criterion value --prefer lower --refresh",
 			"ahp pair suggest-from-attributes --criterion value --prefer lower",
 		},
@@ -166,8 +168,28 @@ var entries = []Entry{
 		Short: "Propose alt pairwise from numeric attributes",
 		Examples: []string{
 			"ahp pair suggest-from-attributes --criterion value --prefer lower --dry-run",
+			"ahp pair suggest-from-attributes --criterion quality --prefer higher --stretch",
 			"ahp pair suggest-from-attributes --criterion value --prefer lower --refresh",
 		},
+	},
+	{
+		ID: "remove-alternative", CLI: "ahp remove-alternative", MCP: "remove_alternative",
+		Short: "Delete an alternative and clean attributes + pairwise refs",
+		Examples: []string{"ahp remove-alternative mirassol"},
+	},
+	{
+		ID: "quote", CLI: "ahp quote", MCP: "",
+		Short: "Multi-source quotes; pick best into attributes",
+		Examples: []string{
+			"ahp quote add swell value 353 --unit BRL --source \"Decolar Pix\" --url https://…",
+			"ahp quote pick value --prefer lower",
+			"ahp quote list",
+		},
+	},
+	{
+		ID: "share", CLI: "ahp share", MCP: "share",
+		Short: "Pasteable ranking summary (WhatsApp-friendly)",
+		Examples: []string{"ahp share --top 5", "ahp share --whatsapp"},
 	},
 	{
 		ID: "pair-import", CLI: "ahp pair import", MCP: "import_pairwise",

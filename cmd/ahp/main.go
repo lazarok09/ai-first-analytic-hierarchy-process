@@ -48,9 +48,12 @@ func main() {
 		cmdSetGoal(),
 		cmdAddCriterion(),
 		cmdAddAlternative(),
+		cmdRemoveAlternative(),
 		cmdSetPairwise(), // deprecated alias → pair set
 		cmdSetAttribute(),
 		cmdConstrain(),
+		cmdQuote(),
+		cmdShare(),
 		cmdMCP(),
 	)
 	if err := root.Execute(); err != nil {

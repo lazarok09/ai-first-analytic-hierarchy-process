@@ -1,0 +1,91 @@
+matrix,left,right,value,status,note
+criteria,value,quality,3,committed,CB: preço > nota
+criteria,value,location,5,committed,
+criteria,value,amenities,5,committed,
+criteria,quality,location,2,committed,
+criteria,quality,amenities,3,committed,
+criteria,location,amenities,2,committed,
+alt:value,apto_209,economy_apart,1/2,committed,from attributes (lower-better): apto_209=420 vs economy_apart=271 → pref ratio 0.645 → Saaty 1/2
+alt:value,apto_209,macarena,1,committed,from attributes (lower-better): apto_209=420 vs macarena=360 → pref ratio 0.857 → Saaty 1
+alt:value,apto_209,mar_e_brisa,1,committed,from attributes (lower-better): apto_209=420 vs mar_e_brisa=500 → pref ratio 1.19 → Saaty 1
+alt:value,apto_209,natal_sun,1,committed,from attributes (lower-better): apto_209=420 vs natal_sun=442 → pref ratio 1.05 → Saaty 1
+alt:value,apto_209,ponta_negra_flat,1,committed,from attributes (lower-better): apto_209=420 vs ponta_negra_flat=310 → pref ratio 0.738 → Saaty 1
+alt:value,apto_209,swell,1,committed,from attributes (lower-better): apto_209=420 vs swell=353 → pref ratio 0.84 → Saaty 1
+alt:value,economy_apart,macarena,1,committed,from attributes (lower-better): economy_apart=271 vs macarena=360 → pref ratio 1.33 → Saaty 1
+alt:value,economy_apart,mar_e_brisa,2,committed,from attributes (lower-better): economy_apart=271 vs mar_e_brisa=500 → pref ratio 1.85 → Saaty 2
+alt:value,economy_apart,natal_sun,2,committed,from attributes (lower-better): economy_apart=271 vs natal_sun=442 → pref ratio 1.63 → Saaty 2
+alt:value,economy_apart,ponta_negra_flat,1,committed,from attributes (lower-better): economy_apart=271 vs ponta_negra_flat=310 → pref ratio 1.14 → Saaty 1
+alt:value,economy_apart,swell,1,committed,from attributes (lower-better): economy_apart=271 vs swell=353 → pref ratio 1.3 → Saaty 1
+alt:value,macarena,mar_e_brisa,1,committed,from attributes (lower-better): macarena=360 vs mar_e_brisa=500 → pref ratio 1.39 → Saaty 1
+alt:value,macarena,natal_sun,1,committed,from attributes (lower-better): macarena=360 vs natal_sun=442 → pref ratio 1.23 → Saaty 1
+alt:value,macarena,ponta_negra_flat,1,committed,from attributes (lower-better): macarena=360 vs ponta_negra_flat=310 → pref ratio 0.861 → Saaty 1
+alt:value,macarena,swell,1,committed,from attributes (lower-better): macarena=360 vs swell=353 → pref ratio 0.981 → Saaty 1
+alt:value,mar_e_brisa,natal_sun,1,committed,from attributes (lower-better): mar_e_brisa=500 vs natal_sun=442 → pref ratio 0.884 → Saaty 1
+alt:value,mar_e_brisa,ponta_negra_flat,1/2,committed,from attributes (lower-better): mar_e_brisa=500 vs ponta_negra_flat=310 → pref ratio 0.62 → Saaty 1/2
+alt:value,mar_e_brisa,swell,1/2,committed,from attributes (lower-better): mar_e_brisa=500 vs swell=353 → pref ratio 0.706 → Saaty 1/2
+alt:value,natal_sun,ponta_negra_flat,1/2,committed,from attributes (lower-better): natal_sun=442 vs ponta_negra_flat=310 → pref ratio 0.701 → Saaty 1/2
+alt:value,natal_sun,swell,1,committed,from attributes (lower-better): natal_sun=442 vs swell=353 → pref ratio 0.799 → Saaty 1
+alt:value,ponta_negra_flat,swell,1,committed,from attributes (lower-better): ponta_negra_flat=310 vs swell=353 → pref ratio 1.14 → Saaty 1
+alt:location,apto_209,economy_apart,1,committed,from attributes (higher-better): apto_209=1.8 vs economy_apart=1.5 → ratio 1.2 → Saaty 1
+alt:location,apto_209,macarena,1,committed,from attributes (higher-better): apto_209=1.8 vs macarena=1.5 → ratio 1.2 → Saaty 1
+alt:location,apto_209,mar_e_brisa,1,committed,from attributes (higher-better): apto_209=1.8 vs mar_e_brisa=1.3 → ratio 1.38 → Saaty 1
+alt:location,apto_209,natal_sun,1,committed,from attributes (higher-better): apto_209=1.8 vs natal_sun=1.4 → ratio 1.29 → Saaty 1
+alt:location,apto_209,ponta_negra_flat,1,committed,from attributes (higher-better): apto_209=1.8 vs ponta_negra_flat=1.7 → ratio 1.06 → Saaty 1
+alt:location,apto_209,swell,1,committed,from attributes (higher-better): apto_209=1.8 vs swell=1.4 → ratio 1.29 → Saaty 1
+alt:location,economy_apart,macarena,1,committed,from attributes (higher-better): economy_apart=1.5 vs macarena=1.5 → ratio 1 → Saaty 1
+alt:location,economy_apart,mar_e_brisa,1,committed,from attributes (higher-better): economy_apart=1.5 vs mar_e_brisa=1.3 → ratio 1.15 → Saaty 1
+alt:location,economy_apart,natal_sun,1,committed,from attributes (higher-better): economy_apart=1.5 vs natal_sun=1.4 → ratio 1.07 → Saaty 1
+alt:location,economy_apart,ponta_negra_flat,1,committed,from attributes (higher-better): economy_apart=1.5 vs ponta_negra_flat=1.7 → ratio 0.882 → Saaty 1
+alt:location,economy_apart,swell,1,committed,from attributes (higher-better): economy_apart=1.5 vs swell=1.4 → ratio 1.07 → Saaty 1
+alt:location,macarena,mar_e_brisa,1,committed,from attributes (higher-better): macarena=1.5 vs mar_e_brisa=1.3 → ratio 1.15 → Saaty 1
+alt:location,macarena,natal_sun,1,committed,from attributes (higher-better): macarena=1.5 vs natal_sun=1.4 → ratio 1.07 → Saaty 1
+alt:location,macarena,ponta_negra_flat,1,committed,from attributes (higher-better): macarena=1.5 vs ponta_negra_flat=1.7 → ratio 0.882 → Saaty 1
+alt:location,macarena,swell,1,committed,from attributes (higher-better): macarena=1.5 vs swell=1.4 → ratio 1.07 → Saaty 1
+alt:location,mar_e_brisa,natal_sun,1,committed,from attributes (higher-better): mar_e_brisa=1.3 vs natal_sun=1.4 → ratio 0.929 → Saaty 1
+alt:location,mar_e_brisa,ponta_negra_flat,1,committed,from attributes (higher-better): mar_e_brisa=1.3 vs ponta_negra_flat=1.7 → ratio 0.765 → Saaty 1
+alt:location,mar_e_brisa,swell,1,committed,from attributes (higher-better): mar_e_brisa=1.3 vs swell=1.4 → ratio 0.929 → Saaty 1
+alt:location,natal_sun,ponta_negra_flat,1,committed,from attributes (higher-better): natal_sun=1.4 vs ponta_negra_flat=1.7 → ratio 0.824 → Saaty 1
+alt:location,natal_sun,swell,1,committed,from attributes (higher-better): natal_sun=1.4 vs swell=1.4 → ratio 1 → Saaty 1
+alt:location,ponta_negra_flat,swell,1,committed,from attributes (higher-better): ponta_negra_flat=1.7 vs swell=1.4 → ratio 1.21 → Saaty 1
+alt:amenities,apto_209,economy_apart,2,committed,from attributes (higher-better): apto_209=2 vs economy_apart=1 → ratio 2 → Saaty 2
+alt:amenities,apto_209,macarena,2,committed,from attributes (higher-better): apto_209=2 vs macarena=1 → ratio 2 → Saaty 2
+alt:amenities,apto_209,mar_e_brisa,1,committed,from attributes (higher-better): apto_209=2 vs mar_e_brisa=2 → ratio 1 → Saaty 1
+alt:amenities,apto_209,natal_sun,1,committed,from attributes (higher-better): apto_209=2 vs natal_sun=2 → ratio 1 → Saaty 1
+alt:amenities,apto_209,ponta_negra_flat,1,committed,from attributes (higher-better): apto_209=2 vs ponta_negra_flat=2 → ratio 1 → Saaty 1
+alt:amenities,apto_209,swell,2,committed,from attributes (higher-better): apto_209=2 vs swell=1 → ratio 2 → Saaty 2
+alt:amenities,economy_apart,macarena,1,committed,from attributes (higher-better): economy_apart=1 vs macarena=1 → ratio 1 → Saaty 1
+alt:amenities,economy_apart,mar_e_brisa,1/2,committed,from attributes (higher-better): economy_apart=1 vs mar_e_brisa=2 → ratio 0.5 → Saaty 1/2
+alt:amenities,economy_apart,natal_sun,1/2,committed,from attributes (higher-better): economy_apart=1 vs natal_sun=2 → ratio 0.5 → Saaty 1/2
+alt:amenities,economy_apart,ponta_negra_flat,1/2,committed,from attributes (higher-better): economy_apart=1 vs ponta_negra_flat=2 → ratio 0.5 → Saaty 1/2
+alt:amenities,economy_apart,swell,1,committed,from attributes (higher-better): economy_apart=1 vs swell=1 → ratio 1 → Saaty 1
+alt:amenities,macarena,mar_e_brisa,1/2,committed,from attributes (higher-better): macarena=1 vs mar_e_brisa=2 → ratio 0.5 → Saaty 1/2
+alt:amenities,macarena,natal_sun,1/2,committed,from attributes (higher-better): macarena=1 vs natal_sun=2 → ratio 0.5 → Saaty 1/2
+alt:amenities,macarena,ponta_negra_flat,1/2,committed,from attributes (higher-better): macarena=1 vs ponta_negra_flat=2 → ratio 0.5 → Saaty 1/2
+alt:amenities,macarena,swell,1,committed,from attributes (higher-better): macarena=1 vs swell=1 → ratio 1 → Saaty 1
+alt:amenities,mar_e_brisa,natal_sun,1,committed,from attributes (higher-better): mar_e_brisa=2 vs natal_sun=2 → ratio 1 → Saaty 1
+alt:amenities,mar_e_brisa,ponta_negra_flat,1,committed,from attributes (higher-better): mar_e_brisa=2 vs ponta_negra_flat=2 → ratio 1 → Saaty 1
+alt:amenities,mar_e_brisa,swell,2,committed,from attributes (higher-better): mar_e_brisa=2 vs swell=1 → ratio 2 → Saaty 2
+alt:amenities,natal_sun,ponta_negra_flat,1,committed,from attributes (higher-better): natal_sun=2 vs ponta_negra_flat=2 → ratio 1 → Saaty 1
+alt:amenities,natal_sun,swell,2,committed,from attributes (higher-better): natal_sun=2 vs swell=1 → ratio 2 → Saaty 2
+alt:amenities,ponta_negra_flat,swell,2,committed,from attributes (higher-better): ponta_negra_flat=2 vs swell=1 → ratio 2 → Saaty 2
+alt:quality,apto_209,economy_apart,2,committed,from attributes (higher-better): apto_209=2.5 vs economy_apart=1.5 → pref ratio 1.91 → Saaty 2; affine stretch
+alt:quality,apto_209,macarena,1,committed,from attributes (higher-better): apto_209=2.5 vs macarena=2.1 → pref ratio 1.24 → Saaty 1; affine stretch
+alt:quality,apto_209,mar_e_brisa,2,committed,from attributes (higher-better): apto_209=2.5 vs mar_e_brisa=1.6 → pref ratio 1.75 → Saaty 2; affine stretch
+alt:quality,apto_209,natal_sun,1,committed,from attributes (higher-better): apto_209=2.5 vs natal_sun=2 → pref ratio 1.31 → Saaty 1; affine stretch
+alt:quality,apto_209,ponta_negra_flat,2,committed,from attributes (higher-better): apto_209=2.5 vs ponta_negra_flat=1.8 → pref ratio 1.5 → Saaty 2; affine stretch
+alt:quality,apto_209,swell,2,committed,from attributes (higher-better): apto_209=2.5 vs swell=1.4 → pref ratio 2.1 → Saaty 2; affine stretch
+alt:quality,economy_apart,macarena,1/2,committed,from attributes (higher-better): economy_apart=1.5 vs macarena=2.1 → pref ratio 0.647 → Saaty 1/2; affine stretch
+alt:quality,economy_apart,mar_e_brisa,1,committed,from attributes (higher-better): economy_apart=1.5 vs mar_e_brisa=1.6 → pref ratio 0.917 → Saaty 1; affine stretch
+alt:quality,economy_apart,natal_sun,1/2,committed,from attributes (higher-better): economy_apart=1.5 vs natal_sun=2 → pref ratio 0.688 → Saaty 1/2; affine stretch
+alt:quality,economy_apart,ponta_negra_flat,1,committed,from attributes (higher-better): economy_apart=1.5 vs ponta_negra_flat=1.8 → pref ratio 0.786 → Saaty 1; affine stretch
+alt:quality,economy_apart,swell,1,committed,from attributes (higher-better): economy_apart=1.5 vs swell=1.4 → pref ratio 1.1 → Saaty 1; affine stretch
+alt:quality,macarena,mar_e_brisa,2,committed,from attributes (higher-better): macarena=2.1 vs mar_e_brisa=1.6 → pref ratio 1.42 → Saaty 2; affine stretch
+alt:quality,macarena,natal_sun,1,committed,from attributes (higher-better): macarena=2.1 vs natal_sun=2 → pref ratio 1.06 → Saaty 1; affine stretch
+alt:quality,macarena,ponta_negra_flat,1,committed,from attributes (higher-better): macarena=2.1 vs ponta_negra_flat=1.8 → pref ratio 1.21 → Saaty 1; affine stretch
+alt:quality,macarena,swell,2,committed,from attributes (higher-better): macarena=2.1 vs swell=1.4 → pref ratio 1.7 → Saaty 2; affine stretch
+alt:quality,mar_e_brisa,natal_sun,1,committed,from attributes (higher-better): mar_e_brisa=1.6 vs natal_sun=2 → pref ratio 0.75 → Saaty 1; affine stretch
+alt:quality,mar_e_brisa,ponta_negra_flat,1,committed,from attributes (higher-better): mar_e_brisa=1.6 vs ponta_negra_flat=1.8 → pref ratio 0.857 → Saaty 1; affine stretch
+alt:quality,mar_e_brisa,swell,1,committed,from attributes (higher-better): mar_e_brisa=1.6 vs swell=1.4 → pref ratio 1.2 → Saaty 1; affine stretch
+alt:quality,natal_sun,ponta_negra_flat,1,committed,from attributes (higher-better): natal_sun=2 vs ponta_negra_flat=1.8 → pref ratio 1.14 → Saaty 1; affine stretch
+alt:quality,natal_sun,swell,2,committed,from attributes (higher-better): natal_sun=2 vs swell=1.4 → pref ratio 1.6 → Saaty 2; affine stretch
+alt:quality,ponta_negra_flat,swell,1,committed,from attributes (higher-better): ponta_negra_flat=1.8 vs swell=1.4 → pref ratio 1.4 → Saaty 1; affine stretch

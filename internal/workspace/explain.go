@@ -116,6 +116,9 @@ type SuggestFromAttributesOptions struct {
 	// Refresh rewrites matching pairs as proposals even when a committed row
 	// already exists (demotes committed→proposal). Never writes status=committed.
 	Refresh bool
+	// Stretch affine-shifts attributes before ratios so tight bands discriminate
+	// (e.g. guest scores 8.4 vs 9.5). Non-positive values always shift.
+	Stretch bool
 }
 
 // SuggestFromAttributesResult lists proposed pairs derived from attributes.
@@ -126,6 +129,7 @@ type SuggestFromAttributesResult struct {
 	Prefer      string                      `json:"prefer"`
 	DryRun      bool                        `json:"dry_run"`
 	Refresh     bool                        `json:"refresh"`
+	Stretch     bool                        `json:"stretch"`
 	Written     int                         `json:"written"`
 	Skipped     int                         `json:"skipped_committed"`
 	Refreshed   int                         `json:"refreshed"` // demoted committed→proposal (subset of Written)
@@ -193,7 +197,10 @@ func (w *Workspace) SuggestFromAttributes(opts SuggestFromAttributesOptions) (*S
 	}
 	sort.Strings(ids)
 
-	sug, err := engine.SuggestPairwiseFromValues(ids, values, prefer == engine.PreferHigher)
+	sug, err := engine.SuggestPairwiseFromValuesOpts(ids, values, engine.SuggestFromValuesOptions{
+		HigherBetter: prefer == engine.PreferHigher,
+		Stretch:      opts.Stretch,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -201,7 +208,8 @@ func (w *Workspace) SuggestFromAttributes(opts SuggestFromAttributesOptions) (*S
 	matrix := "alt:" + opts.CriterionID
 	out := &SuggestFromAttributesResult{
 		Workspace: w.Root, CriterionID: opts.CriterionID, Matrix: matrix,
-		Prefer: string(prefer), DryRun: opts.DryRun, Refresh: opts.Refresh, Suggestions: sug,
+		Prefer: string(prefer), DryRun: opts.DryRun, Refresh: opts.Refresh, Stretch: opts.Stretch,
+		Suggestions: sug,
 	}
 
 	existing, err := w.Pairwise()
@@ -251,7 +259,14 @@ func (w *Workspace) SuggestFromAttributes(opts SuggestFromAttributesOptions) (*S
 	if opts.DryRun {
 		action = "would write"
 	}
-	out.Summary = fmt.Sprintf("%s %d proposal(s) on %s (%s-better); skipped %d committed; refreshed %d",
-		action, written, matrix, prefer, skipped, refreshed)
+	out.Summary = fmt.Sprintf("%s %d proposal(s) on %s (%s-better%s); skipped %d committed; refreshed %d",
+		action, written, matrix, prefer, stretchNote(opts.Stretch), skipped, refreshed)
 	return out, nil
+}
+
+func stretchNote(stretch bool) string {
+	if stretch {
+		return ", stretch"
+	}
+	return ""
 }

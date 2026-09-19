@@ -169,6 +169,49 @@ func TestSuggestPairwiseFromValuesLowerBetter(t *testing.T) {
 	}
 }
 
+func TestSuggestPairwiseAllowsZeroAmenityCounts(t *testing.T) {
+	// Hotel dogfood: amenities 0 vs 1 must not error.
+	ids := []string{"none", "pool"}
+	vals := map[string]float64{"none": 0, "pool": 1}
+	sug, err := SuggestPairwiseFromValues(ids, vals, true)
+	if err != nil {
+		t.Fatalf("zero amenity should be allowed: %v", err)
+	}
+	if len(sug) != 1 {
+		t.Fatalf("pairs=%d", len(sug))
+	}
+	// Ordered alphabetically: none|pool. After shift none=1, pool=2 → pref ratio 0.5
+	// (pool better → Saaty 1/2 when left is worse).
+	if sug[0].Left != "none" || sug[0].Right != "pool" {
+		t.Fatalf("unexpected order %s|%s", sug[0].Left, sug[0].Right)
+	}
+	if sug[0].Value != 0.5 {
+		t.Fatalf("none|pool=%v want 1/2 (note=%s)", sug[0].Value, sug[0].Note)
+	}
+}
+
+func TestSuggestPairwiseStretchDiscriminatesTightScores(t *testing.T) {
+	ids := []string{"ok", "great"}
+	vals := map[string]float64{"ok": 8.4, "great": 9.5}
+	flat, err := SuggestPairwiseFromValues(ids, vals, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if flat[0].Value != 1 {
+		t.Fatalf("without stretch expected Saaty 1, got %v", flat[0].Value)
+	}
+	spread, err := SuggestPairwiseFromValuesOpts(ids, vals, SuggestFromValuesOptions{
+		HigherBetter: true, Stretch: true,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	// stretch: ok=1, great=2.1 → ratio≈2.1 → Saaty 2
+	if spread[0].Value != 2 {
+		t.Fatalf("with stretch expected Saaty 2, got %v note=%s", spread[0].Value, spread[0].Note)
+	}
+}
+
 func approx(t *testing.T, got, want float64) {
 	t.Helper()
 	if math.Abs(got-want) > 1e-5*math.Max(1, math.Abs(want)) {

@@ -1,0 +1,21 @@
+alternative_id,criterion_id,value,unit,source,note
+msi_mag274qrf_qd,value,2429.99,BRL,Pichau Pix,R$2429.99 à vista no Pix (15% off; cartão 2858.81). Specialty PC shop. 2026-09-17.
+asus_pa278cgrv,value,2099.99,BRL,KaBuM Pix 1P,R$2099.99 à vista no Pix (lista 3333.32). KaBuM 1P. 2026-09-17.
+gigabyte_g27q2,refresh,210,Hz,manufacturer/KaBuM,200Hz native / 210Hz OC
+asus_xg27acs,refresh,180,Hz,manufacturer/KaBuM,180Hz
+msi_mag274qrf_qd,refresh,180,Hz,manufacturer/Pichau,180Hz
+asus_pa278cgrv,refresh,144,Hz,manufacturer/KaBuM,144Hz
+gigabyte_g27q2,response,0.5,ms_gtg,manufacturer/KaBuM,Claimed 0.5ms GtG SS IPS; Fast/SS IPS class
+asus_xg27acs,response,1,ms_gtg,manufacturer/KaBuM,Claimed 1ms GtG Fast IPS
+msi_mag274qrf_qd,response,1,ms_gtg,manufacturer/Pichau,Claimed 1ms GtG Rapid IPS
+asus_pa278cgrv,response,5,ms_gtg,ASUS ProArt class / typical IPS office GtG,ProArt creative panel; not Fast IPS — slower motion than gaming Fast IPS peers
+gigabyte_g27q2,panel,ss_ips_95_dci,class,manufacturer,SS IPS; ~95% DCI-P3 / 128% sRGB claimed
+asus_xg27acs,panel,fast_ips_97_dci,class,manufacturer,Fast IPS; 97% DCI-P3 / HDR400
+msi_mag274qrf_qd,panel,rapid_ips_qd_98_dci,class,manufacturer,Rapid IPS + Quantum Dot; ~98% DCI-P3 / 150% sRGB
+asus_pa278cgrv,panel,ips_calman_97_dci,class,manufacturer,IPS Calman Verified ΔE<2; 97% DCI-P3 factory calibrated
+gigabyte_g27q2,clarity,27_qhd,class,spec,27in 2560x1440 — upgrade PPI/vertical vs 29in 1080p UW; loses ultrawide width
+asus_xg27acs,clarity,27_qhd,class,spec,same 27 QHD class
+msi_mag274qrf_qd,clarity,27_qhd,class,spec,same 27 QHD class
+asus_pa278cgrv,clarity,27_qhd,class,spec,same 27 QHD class
+gigabyte_g27q2,value,1249.99,BRL,KaBuM Pix,R$1249.99 Pix (lista 1666.66). Sold/fulfilled by KaBuM 2026-09-17.
+asus_xg27acs,value,1299.99,BRL,KaBuM Pix,R$1299.99 Pix (lista 2333.32). Sold/fulfilled by KaBuM 2026-09-17.

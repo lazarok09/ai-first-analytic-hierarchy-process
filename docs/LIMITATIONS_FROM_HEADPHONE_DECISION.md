@@ -154,6 +154,20 @@ What *did* work well: `init` → `status`/`next` → structure verbs → `pair s
 
 ---
 
+## Follow-up: Ponta Negra hotel dogfood (2026-09-18) — shipped
+
+| Gap | Fix |
+|-----|-----|
+| `rate` Saaty-flattens tight scores (8.4 vs 9.5) | `ahp rate --stretch` |
+| `amenities=0` broke `rate` | Non-positive values auto affine-shift |
+| Silent equal-weight after partial rate | doctor `attrs_unrated` warn |
+| No parking-style hard filter | `ahp constrain <crit> --must-have` |
+| Rebuild workspace to drop alts | `ahp remove-alternative <id>` |
+| Booking vs Decolar quote pick | `ahp quote add` / `ahp quote pick` |
+| WhatsApp paste by hand | `ahp share --whatsapp` |
+
+---
+
 ## 3Whys summary table
 
 | ID | What (gap) | Which (impact here) | Why (root) | Address |

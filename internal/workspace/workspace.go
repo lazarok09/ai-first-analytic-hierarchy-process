@@ -201,7 +201,8 @@ func (w *Workspace) EnsureLayout() error {
 		"alternatives.csv": {"id", "name", "description"},
 		"pairwise.csv":     {"matrix", "left", "right", "value", "status", "note"},
 		"attributes.csv":   {"alternative_id", "criterion_id", "value", "unit", "source", "note"},
-		"constraints.csv":  {"criterion_id", "min", "max", "unit", "prefer", "note"},
+		"constraints.csv":  {"criterion_id", "min", "max", "unit", "prefer", "must_have", "note"},
+		"quotes.csv":       {"alternative_id", "criterion_id", "value", "unit", "source", "note", "url"},
 	}
 	for name, fields := range headers {
 		path := w.dataPath(name)
@@ -396,6 +397,78 @@ func (w *Workspace) UpsertAlternative(item Alternative) error {
 	}
 	sort.Slice(out, func(i, j int) bool { return out[i].ID < out[j].ID })
 	return w.WriteAlternatives(out)
+}
+
+// RemoveAlternativeResult counts rows cleaned when dropping an alternative.
+type RemoveAlternativeResult struct {
+	AlternativeID     string `json:"alternative_id"`
+	RemovedAttributes int    `json:"removed_attributes"`
+	RemovedPairs      int    `json:"removed_pairs"`
+}
+
+// RemoveAlternative deletes an alternative and cleans attributes + pairwise
+// rows that reference it (so agents need not rebuild the workspace).
+func (w *Workspace) RemoveAlternative(id string) (*RemoveAlternativeResult, error) {
+	id = strings.TrimSpace(id)
+	if id == "" {
+		return nil, fmt.Errorf("alternative id is required")
+	}
+	alts, err := w.Alternatives()
+	if err != nil {
+		return nil, err
+	}
+	found := false
+	keptAlts := alts[:0]
+	for _, a := range alts {
+		if a.ID == id {
+			found = true
+			continue
+		}
+		keptAlts = append(keptAlts, a)
+	}
+	if !found {
+		return nil, fmt.Errorf("unknown alternative %q", id)
+	}
+	if err := w.WriteAlternatives(keptAlts); err != nil {
+		return nil, err
+	}
+
+	attrs, err := w.Attributes()
+	if err != nil {
+		return nil, err
+	}
+	keptAttrs := attrs[:0]
+	removedAttrs := 0
+	for _, a := range attrs {
+		if a.AlternativeID == id {
+			removedAttrs++
+			continue
+		}
+		keptAttrs = append(keptAttrs, a)
+	}
+	if err := w.WriteAttributes(keptAttrs); err != nil {
+		return nil, err
+	}
+
+	pairs, err := w.Pairwise()
+	if err != nil {
+		return nil, err
+	}
+	keptPairs := pairs[:0]
+	removedPairs := 0
+	for _, p := range pairs {
+		if p.Left == id || p.Right == id {
+			removedPairs++
+			continue
+		}
+		keptPairs = append(keptPairs, p)
+	}
+	if err := w.WritePairwise(keptPairs); err != nil {
+		return nil, err
+	}
+	return &RemoveAlternativeResult{
+		AlternativeID: id, RemovedAttributes: removedAttrs, RemovedPairs: removedPairs,
+	}, nil
 }
 
 func (w *Workspace) UpsertAttribute(item AttributeRow) error {

@@ -3,6 +3,7 @@ package workspace
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/lazarok09/ahp-method/internal/cliout"
@@ -125,6 +126,125 @@ func TestImportPairwiseCSV(t *testing.T) {
 	pairs, _ := ws.Pairwise()
 	if len(pairs) != 1 || pairs[0].Status != "proposal" || pairs[0].Value != 3 {
 		t.Fatalf("got %+v", pairs)
+	}
+}
+
+func TestMustHaveConstraintExcludesFalsy(t *testing.T) {
+	dir := t.TempDir()
+	ws := Open(dir)
+	_ = ws.EnsureLayout()
+	_ = ws.SaveMeta(Meta{Title: "park"})
+	_ = ws.UpsertCriterion(Criterion{ID: "parking", Name: "Parking"})
+	_ = ws.UpsertCriterion(Criterion{ID: "value", Name: "Value"})
+	_ = ws.UpsertAlternative(Alternative{ID: "with", Name: "With park"})
+	_ = ws.UpsertAlternative(Alternative{ID: "without", Name: "No park"})
+	_ = ws.UpsertAttribute(AttributeRow{AlternativeID: "with", CriterionID: "parking", Value: "1", Unit: "bool", Source: "Booking"})
+	_ = ws.UpsertAttribute(AttributeRow{AlternativeID: "without", CriterionID: "parking", Value: "0", Unit: "bool", Source: "Booking"})
+	_ = ws.UpsertAttribute(AttributeRow{AlternativeID: "with", CriterionID: "value", Value: "300", Unit: "BRL", Source: "Booking"})
+	_ = ws.UpsertAttribute(AttributeRow{AlternativeID: "without", CriterionID: "value", Value: "280", Unit: "BRL", Source: "Booking"})
+	if err := ws.UpsertConstraint(Constraint{CriterionID: "parking", MustHave: true}); err != nil {
+		t.Fatal(err)
+	}
+	ok, viol, err := ws.EligibleAlternativeIDs()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(ok) != 1 || ok[0] != "with" {
+		t.Fatalf("eligible=%v viol=%v", ok, viol)
+	}
+	found := false
+	for _, v := range viol {
+		if v.AlternativeID == "without" && v.CriterionID == "parking" {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatalf("expected without parking violation, got %#v", viol)
+	}
+}
+
+func TestRemoveAlternativeCleansPairsAndAttrs(t *testing.T) {
+	dir := t.TempDir()
+	ws := Open(dir)
+	_ = ws.EnsureLayout()
+	_ = ws.UpsertCriterion(Criterion{ID: "value", Name: "Value"})
+	_ = ws.UpsertAlternative(Alternative{ID: "keep", Name: "Keep"})
+	_ = ws.UpsertAlternative(Alternative{ID: "drop", Name: "Drop"})
+	_ = ws.UpsertAttribute(AttributeRow{AlternativeID: "keep", CriterionID: "value", Value: "1"})
+	_ = ws.UpsertAttribute(AttributeRow{AlternativeID: "drop", CriterionID: "value", Value: "2"})
+	_ = ws.UpsertPairwise(PairwiseRow{Matrix: "alt:value", Left: "drop", Right: "keep", Value: 2, Status: "committed"})
+	res, err := ws.RemoveAlternative("drop")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.RemovedAttributes < 1 || res.RemovedPairs < 1 {
+		t.Fatalf("cleanup counts: %+v", res)
+	}
+	alts, _ := ws.Alternatives()
+	if len(alts) != 1 || alts[0].ID != "keep" {
+		t.Fatalf("alts=%v", alts)
+	}
+	attrs, _ := ws.Attributes()
+	for _, a := range attrs {
+		if a.AlternativeID == "drop" {
+			t.Fatal("attribute for drop still present")
+		}
+	}
+	pairs, _ := ws.Pairwise()
+	for _, p := range pairs {
+		if p.Left == "drop" || p.Right == "drop" {
+			t.Fatalf("pair still references drop: %+v", p)
+		}
+	}
+}
+
+func TestDoctorAttrsUnrated(t *testing.T) {
+	dir := t.TempDir()
+	ws := Open(dir)
+	_ = ws.EnsureLayout()
+	_ = ws.SaveMeta(Meta{Title: "unrated"})
+	_ = ws.UpsertCriterion(Criterion{ID: "value", Name: "Value"})
+	_ = ws.UpsertAlternative(Alternative{ID: "a", Name: "A"})
+	_ = ws.UpsertAlternative(Alternative{ID: "b", Name: "B"})
+	_ = ws.UpsertAttribute(AttributeRow{AlternativeID: "a", CriterionID: "value", Value: "100", Unit: "BRL", Source: "shop"})
+	_ = ws.UpsertAttribute(AttributeRow{AlternativeID: "b", CriterionID: "value", Value: "200", Unit: "BRL", Source: "shop"})
+	// no pairwise on alt:value
+	rep, err := ws.Doctor(DoctorOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !hasFindingCode(rep, "attrs_unrated") {
+		t.Fatalf("expected attrs_unrated, got %#v", rep.Findings)
+	}
+}
+
+func TestPickQuotePrefersLowerLocalSource(t *testing.T) {
+	dir := t.TempDir()
+	ws := Open(dir)
+	_ = ws.EnsureLayout()
+	_ = ws.UpsertCriterion(Criterion{ID: "value", Name: "Value"})
+	_ = ws.UpsertAlternative(Alternative{ID: "swell", Name: "Swell"})
+	_ = ws.UpsertQuote(QuoteRow{
+		AlternativeID: "swell", CriterionID: "value", Value: "600", Unit: "BRL",
+		Source: "Booking.com", URL: "https://www.booking.com/hotel/br/swell-praia.pt-br.html",
+	})
+	_ = ws.UpsertQuote(QuoteRow{
+		AlternativeID: "swell", CriterionID: "value", Value: "353", Unit: "BRL",
+		Source: "Decolar Pix", URL: "https://www.decolar.com/hoteis/h-7319753/swell-praia-hotel-natal",
+	})
+	res, err := ws.PickQuote("value", "lower")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(res.Picked) != 1 || res.Picked[0].Value != "353" || res.Picked[0].Source != "Decolar Pix" {
+		t.Fatalf("picked=%+v", res.Picked)
+	}
+	attrs, _ := ws.Attributes()
+	if len(attrs) != 1 || attrs[0].Value != "353" {
+		t.Fatalf("attrs=%+v", attrs)
+	}
+	if !strings.Contains(attrs[0].Note, "Booking.com=600") {
+		t.Fatalf("note should mention discarded Booking quote: %s", attrs[0].Note)
 	}
 }
 
