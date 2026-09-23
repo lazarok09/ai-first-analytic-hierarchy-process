@@ -33,6 +33,7 @@ Exit codes (docs/ROADMAP.md):
 	addIncludeFlag(c)
 	c.Flags().Bool("strict", false, "Fail with exit 4 when proposal judgments are pending")
 	c.Flags().Bool("purchase", false, "Audit price provenance, FX smell, and alt:value direction")
+	c.Flags().Bool("method", false, "Audit absolute/Gaussian readiness (attributes + prefer)")
 	return c
 }
 
@@ -51,6 +52,7 @@ func cmdValidate() *cobra.Command {
 	addIncludeFlag(c)
 	c.Flags().Bool("strict", false, "Fail with exit 4 when proposal judgments are pending")
 	c.Flags().Bool("purchase", false, "Audit price provenance, FX smell, and alt:value direction")
+	c.Flags().Bool("method", false, "Audit absolute/Gaussian readiness (attributes + prefer)")
 	return c
 }
 
@@ -58,6 +60,7 @@ func runDoctor(cmd *cobra.Command, args []string) error {
 	include, _ := cmd.Flags().GetBool("include-proposals")
 	strict, _ := cmd.Flags().GetBool("strict")
 	purchase, _ := cmd.Flags().GetBool("purchase")
+	method, _ := cmd.Flags().GetBool("method")
 
 	ws, err := openWS(wsFlag(cmd))
 	if err != nil {
@@ -68,6 +71,7 @@ func runDoctor(cmd *cobra.Command, args []string) error {
 		IncludeProposals: include,
 		Strict:           strict,
 		Purchase:         purchase,
+		Method:           method,
 	})
 	if err != nil {
 		return cliout.Wrap(cliout.ExitIO, err)

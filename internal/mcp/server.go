@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/lazarok09/ahp-method/internal/engine"
@@ -29,7 +30,9 @@ Rules:
 - Prefer missing_pairs and workspace_status before filling matrices.
 - If CR > 0.10, call suggest_repairs and propose revised values (still as proposals).
 - Use explain / sensitivity for close rankings. Use suggest_from_attributes to turn numeric attributes into proposal judgments (never commits; refresh demotes committed).
-- Use constrain for budget bands; doctor --purchase (or constraints present) audits FX/provenance.`
+- Use constrain for budget bands; doctor --purchase (or min/max/unit constraints) audits FX/provenance.
+- Comparative absolute/Gaussian: set prefer with constrain --prefer, then absolute / gaussian tools (no Saaty CR on those scores).
+- Optional: pass journal=true on compute (or AHP_JOURNAL=1) to snapshot under tmp/journal/; use journal_list / journal_show.`
 
 func Run() error {
 	s := server.NewMCPServer("ahp-method", "0.3.0",
@@ -280,9 +283,11 @@ func Run() error {
 	}))
 
 	s.AddTool(mcp.NewTool("compute",
-		mcp.WithDescription("Run AHP math and write output/weights.csv, ranking.csv, report.html."),
+		mcp.WithDescription("Run AHP math and write output/weights.csv, ranking.csv, report.html. Optional journal snapshot under tmp/journal/. Optional method=gaussian|hybrid|absolute|compare for comparative views."),
 		mcp.WithString("workspace"),
 		mcp.WithBoolean("include_proposals"),
+		mcp.WithString("method", mcp.Description("saaty (default)|gaussian|hybrid|absolute|compare")),
+		mcp.WithBoolean("journal", mcp.Description("Snapshot data+results under tmp/journal/ (default: ahp.toml / AHP_JOURNAL)")),
 	), wrap(func(args map[string]any) (any, error) {
 		ws, err := open(args)
 		if err != nil {
@@ -292,14 +297,103 @@ func Run() error {
 		if err != nil {
 			return nil, err
 		}
-		paths, err := ws.WriteOutputs(result, render.HTML(result))
+		out := map[string]any{
+			"complete": result.Complete, "consistent": result.Consistent,
+			"warnings": result.Warnings, "ranking": result.Ranking,
+		}
+		method := strArg(args, "method", "saaty")
+		include := boolArg(args, "include_proposals")
+		if err := ws.AttachComparative(result, include, method); err != nil {
+			return nil, err
+		}
+		out["warnings"] = result.Warnings
+		if result.Absolute != nil {
+			out["absolute"] = result.Absolute
+			out["absolute_json"] = filepath.Join(ws.OutputDir(), "absolute.json")
+		}
+		if result.Gaussian != nil {
+			out["gaussian"] = result.Gaussian
+			out["gaussian_json"] = filepath.Join(ws.OutputDir(), "gaussian.json")
+		}
+		opts := workspace.WriteOutputsOpts{Command: "compute"}
+		if _, ok := args["journal"]; ok {
+			v := boolArg(args, "journal")
+			opts.Journal = &v
+		}
+		paths, err := ws.WriteOutputs(result, render.HTML(result), opts)
 		if err != nil {
 			return nil, err
 		}
-		return map[string]any{
-			"complete": result.Complete, "consistent": result.Consistent,
-			"warnings": result.Warnings, "ranking": result.Ranking, "paths": paths,
-		}, nil
+		out["paths"] = paths
+		if id := paths["journal_id"]; id != "" {
+			out["journal_id"] = id
+			out["journal_path"] = paths["journal_path"]
+		}
+		return out, nil
+	}))
+
+	s.AddTool(mcp.NewTool("gaussian",
+		mcp.WithDescription("Comparative AHP-Gaussian ranking from attributes (σ/μ weights). No Saaty CR. Writes output/gaussian.json."),
+		mcp.WithString("workspace"),
+	), wrap(func(args map[string]any) (any, error) {
+		ws, err := open(args)
+		if err != nil {
+			return nil, err
+		}
+		res, err := ws.Gaussian()
+		if err != nil {
+			return nil, err
+		}
+		path, err := ws.WriteGaussianOutputs(res)
+		if err != nil {
+			return nil, err
+		}
+		return map[string]any{"result": res, "gaussian_json": path}, nil
+	}))
+
+	s.AddTool(mcp.NewTool("absolute",
+		mcp.WithDescription("Sum-normalize attributes; hybrid score with criteria weights when available. Writes output/absolute.json."),
+		mcp.WithString("workspace"),
+		mcp.WithBoolean("include_proposals"),
+	), wrap(func(args map[string]any) (any, error) {
+		ws, err := open(args)
+		if err != nil {
+			return nil, err
+		}
+		res, err := ws.Absolute(boolArg(args, "include_proposals"))
+		if err != nil {
+			return nil, err
+		}
+		path, err := ws.WriteAbsoluteOutputs(res)
+		if err != nil {
+			return nil, err
+		}
+		return map[string]any{"result": res, "absolute_json": path}, nil
+	}))
+
+	s.AddTool(mcp.NewTool("journal_list",
+		mcp.WithDescription("List tmp/journal run snapshots (newest first)."),
+		mcp.WithString("workspace"),
+		mcp.WithNumber("limit", mcp.Description("Max entries (0 = all)"), mcp.DefaultNumber(20)),
+	), wrap(func(args map[string]any) (any, error) {
+		ws, err := open(args)
+		if err != nil {
+			return nil, err
+		}
+		limit := int(floatArg(args, "limit", 20))
+		return ws.JournalList(limit)
+	}))
+
+	s.AddTool(mcp.NewTool("journal_show",
+		mcp.WithDescription("Show meta + summary for a journal run id (or latest)."),
+		mcp.WithString("workspace"),
+		mcp.WithString("id", mcp.Description("Journal id or latest"), mcp.DefaultString("latest")),
+	), wrap(func(args map[string]any) (any, error) {
+		ws, err := open(args)
+		if err != nil {
+			return nil, err
+		}
+		return ws.JournalShow(strArg(args, "id", "latest"))
 	}))
 
 	s.AddTool(mcp.NewTool("explain",

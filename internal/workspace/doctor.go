@@ -29,6 +29,8 @@ type DoctorOptions struct {
 	// Purchase enables attribute provenance / FX / pairwise-direction checks
 	// (also runs automatically when constraints.csv has rows).
 	Purchase bool
+	// Method enables absolute/Gaussian readiness checks (decision matrix + prefer).
+	Method bool
 }
 
 // DoctorReport is the structured result of Doctor / validate.
@@ -283,7 +285,16 @@ func (w *Workspace) Doctor(opts DoctorOptions) (*DoctorReport, error) {
 		})
 	}
 
-	runPurchase := opts.Purchase || len(constraints) > 0
+	runPurchase := opts.Purchase
+	if !runPurchase {
+		for _, c := range constraints {
+			// Prefer-only rows are method direction, not purchase bands.
+			if c.Min != nil || c.Max != nil || c.Unit != "" {
+				runPurchase = true
+				break
+			}
+		}
+	}
 	if runPurchase {
 		pf, err := w.PurchaseIntegrityFindings()
 		if err != nil {
@@ -298,6 +309,14 @@ func (w *Workspace) Doctor(opts DoctorOptions) (*DoctorReport, error) {
 		}
 	}
 
+	if opts.Method {
+		mf, err := w.MethodFindings()
+		if err != nil {
+			return nil, err
+		}
+		report.Findings = append(report.Findings, mf...)
+	}
+
 	sort.SliceStable(report.Findings, func(i, j int) bool {
 		return findingRank(report.Findings[i]) < findingRank(report.Findings[j]) ||
 			(findingRank(report.Findings[i]) == findingRank(report.Findings[j]) &&
@@ -307,6 +326,14 @@ func (w *Workspace) Doctor(opts DoctorOptions) (*DoctorReport, error) {
 	incomplete := hasCode(report.Findings, "missing_toml", "missing_data_file", "no_criteria", "no_alternatives",
 		"orphan_parent", "unknown_pairwise_id", "unknown_matrix", "unknown_attribute_alt", "unknown_attribute_crit",
 		"empty_matrix", "missing_pair") || (!result.Complete && !filledByProposals)
+	if opts.Method {
+		for _, f := range report.Findings {
+			if f.Severity == "error" && (f.Code == "method_missing_prefer" || f.Code == "method_incomplete_matrix") {
+				incomplete = true
+				break
+			}
+		}
+	}
 	inconsistent := hasCode(report.Findings, "cr_hotspot") || (result.Complete && !result.Consistent)
 	purchaseBlocker := hasCode(report.Findings,
 		"fx_or_foreign_source", "missing_source", "missing_unit", "unit_mismatch", "non_numeric",

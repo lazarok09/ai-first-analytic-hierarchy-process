@@ -1,0 +1,11 @@
+id,name,parent_id,description
+aluminum,Alumínio,,Material alumínio (hard filter)
+brand,Marca / construção,,"Marca reconhecida, loja oficial, acabamento alumínio touring."
+capacity,Capacidade real 2 capacetes,,Profundidade útil e claim de 2 capacetes para viagem Dominar.
+cushion,Almofada / encosto,,Almofada/encosto para passageiro incluso (hard filter)
+kit,Kit / conforto,,Base universal + encosto/garupa e extras úteis.
+liters,65 litros,,Capacidade nominal 65L (hard filter)
+security,Segurança,,Trava/chave/anti-roubo (hard filter)
+support,Suporte / base,,Suporte/base de fixação incluso no anúncio (hard filter)
+trust,Prova social ML,,Nota + volume de avaliações/vendas no Mercado Livre.
+value,Preço / valor,,Preço street ML (promo). Preferir menor.

@@ -101,8 +101,8 @@ func (w *Workspace) UpsertConstraint(item Constraint) error {
 	if item.Min != nil && item.Max != nil && *item.Min > *item.Max {
 		return fmt.Errorf("min %.4g > max %.4g", *item.Min, *item.Max)
 	}
-	if !item.MustHave && item.Min == nil && item.Max == nil && item.Unit == "" {
-		return fmt.Errorf("provide --must-have and/or --min/--max/--unit")
+	if !item.MustHave && item.Min == nil && item.Max == nil && item.Unit == "" && item.Prefer == "" {
+		return fmt.Errorf("provide --prefer, --must-have, and/or --min/--max/--unit")
 	}
 	items, err := w.Constraints()
 	if err != nil {

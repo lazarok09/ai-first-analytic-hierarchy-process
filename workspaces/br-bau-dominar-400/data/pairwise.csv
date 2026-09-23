@@ -1,0 +1,76 @@
+matrix,left,right,value,status,note
+alt:liters,avento,rovik,1,committed,from attributes (higher-better): avento=65 vs rovik=65 → pref ratio 1 → Saaty 1
+alt:liters,avento,tronos,1,committed,from attributes (higher-better): avento=65 vs tronos=65 → pref ratio 1 → Saaty 1
+alt:liters,rovik,tronos,1,committed,from attributes (higher-better): rovik=65 vs tronos=65 → pref ratio 1 → Saaty 1
+alt:aluminum,avento,rovik,1,committed,from attributes (higher-better): avento=1 vs rovik=1 → pref ratio 1 → Saaty 1
+alt:aluminum,avento,tronos,1,committed,from attributes (higher-better): avento=1 vs tronos=1 → pref ratio 1 → Saaty 1
+alt:aluminum,rovik,tronos,1,committed,from attributes (higher-better): rovik=1 vs tronos=1 → pref ratio 1 → Saaty 1
+alt:cushion,avento,rovik,1,committed,from attributes (higher-better): avento=1 vs rovik=1 → pref ratio 1 → Saaty 1
+alt:cushion,avento,tronos,1,committed,from attributes (higher-better): avento=1 vs tronos=1 → pref ratio 1 → Saaty 1
+alt:cushion,rovik,tronos,1,committed,from attributes (higher-better): rovik=1 vs tronos=1 → pref ratio 1 → Saaty 1
+alt:support,avento,rovik,1,committed,from attributes (higher-better): avento=1 vs rovik=1 → pref ratio 1 → Saaty 1
+alt:support,avento,tronos,1,committed,from attributes (higher-better): avento=1 vs tronos=1 → pref ratio 1 → Saaty 1
+alt:support,rovik,tronos,1,committed,from attributes (higher-better): rovik=1 vs tronos=1 → pref ratio 1 → Saaty 1
+alt:security,avento,rovik,1,committed,from attributes (higher-better): avento=1 vs rovik=1 → pref ratio 1 → Saaty 1
+alt:security,avento,tronos,1,committed,from attributes (higher-better): avento=1 vs tronos=1 → pref ratio 1 → Saaty 1
+alt:security,rovik,tronos,1,committed,from attributes (higher-better): rovik=1 vs tronos=1 → pref ratio 1 → Saaty 1
+criteria,capacity,brand,2,committed,soft ranking
+criteria,capacity,value,3,committed,soft ranking
+criteria,capacity,kit,4,committed,soft ranking
+criteria,brand,value,2,committed,soft ranking
+criteria,brand,kit,3,committed,soft ranking
+criteria,value,kit,3,committed,soft ranking
+criteria,trust,kit,2,committed,soft ranking
+criteria,liters,aluminum,1,committed,filtros hard iguais
+criteria,liters,cushion,1,committed,filtros hard iguais
+criteria,liters,support,1,committed,filtros hard iguais
+criteria,liters,security,1,committed,filtros hard iguais
+criteria,aluminum,cushion,1,committed,filtros hard iguais
+criteria,aluminum,support,1,committed,filtros hard iguais
+criteria,aluminum,security,1,committed,filtros hard iguais
+criteria,cushion,support,1,committed,filtros hard iguais
+criteria,cushion,security,1,committed,filtros hard iguais
+criteria,support,security,1,committed,filtros hard iguais
+criteria,capacity,liters,5,committed,ranking soft > filtro já hard-gated
+criteria,capacity,aluminum,5,committed,ranking soft > filtro já hard-gated
+criteria,capacity,cushion,5,committed,ranking soft > filtro já hard-gated
+criteria,capacity,support,5,committed,ranking soft > filtro já hard-gated
+criteria,capacity,security,5,committed,ranking soft > filtro já hard-gated
+criteria,brand,liters,5,committed,ranking soft > filtro já hard-gated
+criteria,brand,aluminum,5,committed,ranking soft > filtro já hard-gated
+criteria,brand,cushion,5,committed,ranking soft > filtro já hard-gated
+criteria,brand,support,5,committed,ranking soft > filtro já hard-gated
+criteria,brand,security,5,committed,ranking soft > filtro já hard-gated
+criteria,value,liters,5,committed,ranking soft > filtro já hard-gated
+criteria,value,aluminum,5,committed,ranking soft > filtro já hard-gated
+criteria,value,cushion,5,committed,ranking soft > filtro já hard-gated
+criteria,value,support,5,committed,ranking soft > filtro já hard-gated
+criteria,value,security,5,committed,ranking soft > filtro já hard-gated
+criteria,trust,liters,5,committed,ranking soft > filtro já hard-gated
+criteria,trust,aluminum,5,committed,ranking soft > filtro já hard-gated
+criteria,trust,cushion,5,committed,ranking soft > filtro já hard-gated
+criteria,trust,support,5,committed,ranking soft > filtro já hard-gated
+criteria,trust,security,5,committed,ranking soft > filtro já hard-gated
+criteria,kit,liters,5,committed,ranking soft > filtro já hard-gated
+criteria,kit,aluminum,5,committed,ranking soft > filtro já hard-gated
+criteria,kit,cushion,5,committed,ranking soft > filtro já hard-gated
+criteria,kit,support,5,committed,ranking soft > filtro já hard-gated
+criteria,kit,security,5,committed,ranking soft > filtro já hard-gated
+alt:value,avento,rovik,2,committed,R$755 vs R$884
+alt:value,avento,tronos,2,committed,R$755 vs R$899
+alt:value,rovik,tronos,1,committed,R$884 vs R$899
+alt:trust,avento,tronos,3,committed,4.9/224 + trava elogiada vs 4.7/166 com anti-roubo fraco
+alt:trust,avento,rovik,7,committed,muitas reviews vs zero
+alt:trust,tronos,rovik,5,committed,166 opiniões vs zero
+alt:brand,avento,tronos,2,committed,reviews robustez/trava > loja oficial com base enferrujando
+alt:brand,avento,rovik,4,committed,
+alt:brand,tronos,rovik,3,committed,
+alt:capacity,tronos,avento,2,committed,Norisk 60x2 folga vs bom mas genérico
+alt:capacity,tronos,rovik,2,committed,
+alt:capacity,avento,rovik,1,committed,
+alt:kit,avento,tronos,2,committed,base útil vs base ferro que oxida
+alt:kit,avento,rovik,1,committed,
+alt:kit,rovik,tronos,2,committed,kit base+encosto sem relato de oxidação vs base Tronos
+criteria,trust,brand,2,committed,"após ler reviews, prova social conteudista > marca anunciada"
+criteria,trust,value,2,committed,reviews de segurança/material pesam
+criteria,capacity,trust,2,committed,

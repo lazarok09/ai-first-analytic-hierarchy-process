@@ -115,6 +115,9 @@ type ComputeResult struct {
 	// RankingMode is "ahp" when matrices are complete, "equal_fallback" when
 	// incomplete solvers used equal weights, or empty when there is no ranking.
 	RankingMode string `json:"ranking_mode,omitempty"`
+	// Comparative absolute / Gaussian views (opt-in; Saaty ranking stays canonical).
+	Absolute *AbsoluteMethodResult `json:"absolute,omitempty"`
+	Gaussian *GaussianMethodResult `json:"gaussian,omitempty"`
 }
 
 // MissingCoverage splits pairwise gaps into committed-only vs proposal-covered (L4).
@@ -239,7 +242,41 @@ func (w *Workspace) LoadMeta() (Meta, error) {
 func (w *Workspace) SaveMeta(m Meta) error {
 	content := fmt.Sprintf("[decision]\ntitle = %s\ndescription = %s\n",
 		quoteTOML(m.Title), quoteTOML(m.Description))
+	// Preserve optional [journal] (and any trailing sections) so set_goal does not wipe it.
+	if prev, err := os.ReadFile(w.TomlPath()); err == nil {
+		if block := extractTOMLSection(string(prev), "journal"); block != "" {
+			content += "\n" + block
+			if !strings.HasSuffix(content, "\n") {
+				content += "\n"
+			}
+		}
+	}
 	return os.WriteFile(w.TomlPath(), []byte(content), 0o644)
+}
+
+// extractTOMLSection returns the [name] section including header through the next [section] or EOF.
+func extractTOMLSection(tomlText, name string) string {
+	header := "[" + name + "]"
+	lines := strings.Split(tomlText, "\n")
+	start := -1
+	for i, raw := range lines {
+		if strings.TrimSpace(raw) == header {
+			start = i
+			break
+		}
+	}
+	if start < 0 {
+		return ""
+	}
+	end := len(lines)
+	for i := start + 1; i < len(lines); i++ {
+		t := strings.TrimSpace(lines[i])
+		if strings.HasPrefix(t, "[") && strings.HasSuffix(t, "]") {
+			end = i
+			break
+		}
+	}
+	return strings.TrimRight(strings.Join(lines[start:end], "\n"), "\n") + "\n"
 }
 
 func (w *Workspace) Criteria() ([]Criterion, error) {
@@ -589,55 +626,10 @@ func (w *Workspace) Compute(includeProposals bool) (*ComputeResult, error) {
 	}
 
 	pairMap := groupPairs(used)
-	matrices := map[string]MatrixPayload{}
+	leafWeights, matrices, critWarns := criteriaHierarchyWeights(root, childByParent, critNames, pairMap)
+	warnings = append(warnings, critWarns...)
 
-	rootIDs := idsOf(root)
-	critResult := engine.SolvePairwise(rootIDs, pairMap["criteria"])
-	matrices["criteria"] = matrixPayload(critResult, critNames)
-	if !critResult.Complete {
-		warnings = append(warnings, "Criteria pairwise matrix is incomplete.")
-	} else if critResult.CR > engine.CRAccept {
-		warnings = append(warnings, fmt.Sprintf("Criteria CR=%.3f exceeds 0.10.", critResult.CR))
-		for _, h := range matrices["criteria"].Repairs {
-			if len(warnings) > 20 {
-				break
-			}
-			warnings = append(warnings, fmt.Sprintf("  revisit criteria %s vs %s: %s → %s",
-				h.Left, h.Right, engine.FormatSaaty(h.Current), engine.FormatSaaty(h.Suggested)))
-		}
-	}
-
-	leafWeights := map[string]float64{}
 	localWeights := map[string]map[string]float64{}
-
-	if len(childByParent) > 0 {
-		for _, parent := range root {
-			children := childByParent[parent.ID]
-			if len(children) == 0 {
-				leafWeights[parent.ID] = critResult.Weights[parent.ID]
-				continue
-			}
-			key := "criteria:" + parent.ID
-			local := engine.SolvePairwise(idsOf(children), pairMap[key])
-			matrices[key] = matrixPayload(local, critNames)
-			pw := critResult.Weights[parent.ID]
-			for cid, wt := range local.Weights {
-				leafWeights[cid] = pw * wt
-			}
-			if !local.Complete {
-				warnings = append(warnings, fmt.Sprintf("Sub-criteria under %s incomplete.", parent.ID))
-			} else if local.CR > engine.CRAccept {
-				warnings = append(warnings, fmt.Sprintf("Sub-criteria %s CR=%.3f exceeds 0.10.", parent.ID, local.CR))
-			}
-		}
-		for _, parent := range root {
-			if _, ok := childByParent[parent.ID]; !ok {
-				leafWeights[parent.ID] = critResult.Weights[parent.ID]
-			}
-		}
-	} else {
-		leafWeights = critResult.Weights
-	}
 
 	altIDs := make([]string, 0, len(alternatives))
 	altNames := map[string]string{}
@@ -757,7 +749,11 @@ func orEmpty(s, d string) string {
 	return s
 }
 
-func (w *Workspace) WriteOutputs(result *ComputeResult, html string) (map[string]string, error) {
+func (w *Workspace) WriteOutputs(result *ComputeResult, html string, opts ...WriteOutputsOpts) (map[string]string, error) {
+	var wo WriteOutputsOpts
+	if len(opts) > 0 {
+		wo = opts[0]
+	}
 	if err := os.MkdirAll(w.OutputDir(), 0o755); err != nil {
 		return nil, err
 	}
@@ -801,10 +797,22 @@ func (w *Workspace) WriteOutputs(result *ComputeResult, html string) (map[string
 	if err := os.WriteFile(htmlPath, []byte(html), 0o644); err != nil {
 		return nil, err
 	}
-	return map[string]string{
+	paths := map[string]string{
 		"weights_csv": weightsPath, "ranking_csv": rankingPath,
 		"compute_json": jsonPath, "report_html": htmlPath,
-	}, nil
+	}
+	if wo.Command == "" {
+		wo.Command = "compute"
+	}
+	entry, err := w.WriteJournalEntry(result, html, wo)
+	if err != nil {
+		return nil, err
+	}
+	if entry != nil {
+		paths["journal_id"] = entry.ID
+		paths["journal_path"] = filepath.Join(w.Root, filepath.FromSlash(entry.Path))
+	}
+	return paths, nil
 }
 
 func (w *Workspace) Status(includeProposals bool) (*StatusSummary, error) {
@@ -1001,6 +1009,64 @@ func matrixPayload(r engine.MatrixResult, names map[string]string) MatrixPayload
 		Complete: r.Complete, Consistent: r.Consistent(),
 		Missing: missing, Matrix: r.Matrix, Repairs: repairs,
 	}
+}
+
+// criteriaHierarchyWeights solves root + nested criteria matrices (no alt:*).
+// Shared by Compute and Absolute hybrid scoring so Absolute need not run full synthesis.
+func criteriaHierarchyWeights(
+	root []Criterion,
+	childByParent map[string][]Criterion,
+	critNames map[string]string,
+	pairMap map[string]map[engine.PairKey]float64,
+) (leafWeights map[string]float64, matrices map[string]MatrixPayload, warnings []string) {
+	matrices = map[string]MatrixPayload{}
+	leafWeights = map[string]float64{}
+
+	rootIDs := idsOf(root)
+	critResult := engine.SolvePairwise(rootIDs, pairMap["criteria"])
+	matrices["criteria"] = matrixPayload(critResult, critNames)
+	if !critResult.Complete {
+		warnings = append(warnings, "Criteria pairwise matrix is incomplete.")
+	} else if critResult.CR > engine.CRAccept {
+		warnings = append(warnings, fmt.Sprintf("Criteria CR=%.3f exceeds 0.10.", critResult.CR))
+		for _, h := range matrices["criteria"].Repairs {
+			if len(warnings) > 20 {
+				break
+			}
+			warnings = append(warnings, fmt.Sprintf("  revisit criteria %s vs %s: %s → %s",
+				h.Left, h.Right, engine.FormatSaaty(h.Current), engine.FormatSaaty(h.Suggested)))
+		}
+	}
+
+	if len(childByParent) > 0 {
+		for _, parent := range root {
+			children := childByParent[parent.ID]
+			if len(children) == 0 {
+				leafWeights[parent.ID] = critResult.Weights[parent.ID]
+				continue
+			}
+			key := "criteria:" + parent.ID
+			local := engine.SolvePairwise(idsOf(children), pairMap[key])
+			matrices[key] = matrixPayload(local, critNames)
+			pw := critResult.Weights[parent.ID]
+			for cid, wt := range local.Weights {
+				leafWeights[cid] = pw * wt
+			}
+			if !local.Complete {
+				warnings = append(warnings, fmt.Sprintf("Sub-criteria under %s incomplete.", parent.ID))
+			} else if local.CR > engine.CRAccept {
+				warnings = append(warnings, fmt.Sprintf("Sub-criteria %s CR=%.3f exceeds 0.10.", parent.ID, local.CR))
+			}
+		}
+		for _, parent := range root {
+			if _, ok := childByParent[parent.ID]; !ok {
+				leafWeights[parent.ID] = critResult.Weights[parent.ID]
+			}
+		}
+	} else {
+		leafWeights = critResult.Weights
+	}
+	return leafWeights, matrices, warnings
 }
 
 func groupPairs(rows []PairwiseRow) map[string]map[engine.PairKey]float64 {

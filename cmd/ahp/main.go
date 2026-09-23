@@ -39,8 +39,11 @@ func main() {
 		cmdExplain(),
 		cmdSensitivity(),
 		cmdRate(),
+		cmdGaussian(),
+		cmdAbsolute(),
 		cmdGet(),
 		cmdDescribe(),
+		cmdJournal(),
 		cmdCatalog(),
 		cmdDocs(),
 		cmdCompletion(),
@@ -135,8 +138,14 @@ func cmdCompute() *cobra.Command {
 	c := &cobra.Command{
 		Use:   "compute",
 		Short: "Solve eigenvectors, CR, synthesis; write output CSVs + HTML",
+		Long: `Default --method=saaty writes classical AHP outputs.
+
+Opt-in comparative methods (Santos absolute / AHP-Gaussian):
+  --method=gaussian|hybrid|absolute|compare
+Saaty remains canonical; comparative JSON is additive (gaussian.json / absolute.json).`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			include, _ := cmd.Flags().GetBool("include-proposals")
+			method, _ := cmd.Flags().GetString("method")
 			ws, err := openWS(wsFlag(cmd))
 			if err != nil {
 				return err
@@ -145,7 +154,15 @@ func cmdCompute() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			paths, err := ws.WriteOutputs(result, render.HTML(result))
+			switch method {
+			case "", "saaty", "gaussian", "hybrid", "absolute", "compare":
+			default:
+				return cliout.NewExitError(cliout.ExitUsage, "unknown --method %q (saaty|gaussian|hybrid|absolute|compare)", method)
+			}
+			if err := ws.AttachComparative(result, include, method); err != nil {
+				return cliout.Wrap(cliout.ExitIncomplete, err)
+			}
+			paths, err := ws.WriteOutputs(result, render.HTML(result), journalOptsFromCmd(cmd, cmd.Name()))
 			if err != nil {
 				return err
 			}
@@ -159,11 +176,19 @@ func cmdCompute() *cobra.Command {
 			fmt.Println("report:", paths["report_html"])
 			fmt.Println("weights:", paths["weights_csv"])
 			fmt.Println("ranking:", paths["ranking_csv"])
+			if jp := paths["journal_path"]; jp != "" {
+				fmt.Println("journal:", jp)
+			}
+			if method != "" && method != "saaty" {
+				printCompareExtras(cmd, result, method)
+			}
 			return nil
 		},
 	}
 	addWorkspaceFlag(c)
 	addIncludeFlag(c)
+	addJournalFlags(c)
+	c.Flags().String("method", "saaty", "saaty|gaussian|hybrid|absolute|compare")
 	return c
 }
 
@@ -175,6 +200,7 @@ func cmdRender() *cobra.Command {
 	}
 	addWorkspaceFlag(c)
 	addIncludeFlag(c)
+	addJournalFlags(c)
 	return c
 }
 
@@ -195,11 +221,14 @@ func cmdOpen() *cobra.Command {
 				if err != nil {
 					return err
 				}
-				paths, err := ws.WriteOutputs(result, render.HTML(result))
+				paths, err := ws.WriteOutputs(result, render.HTML(result), journalOptsFromCmd(cmd, "open"))
 				if err != nil {
 					return err
 				}
 				report = paths["report_html"]
+				if jp := paths["journal_path"]; jp != "" {
+					fmt.Println("journal:", jp)
+				}
 			}
 			abs, _ := filepath.Abs(report)
 			fmt.Println("report:", abs)
@@ -209,6 +238,7 @@ func cmdOpen() *cobra.Command {
 	}
 	addWorkspaceFlag(c)
 	addIncludeFlag(c)
+	addJournalFlags(c)
 	c.Flags().Bool("no-compute", false, "Do not recompute before opening")
 	return c
 }

@@ -19,6 +19,14 @@ Requires Go **1.25.5+**.
 ./bin/ahp tree -w examples/vendor-selection
 ```
 
+Optional run history (off by default):
+
+```bash
+./bin/ahp compute -w examples/vendor-selection --journal
+./bin/ahp journal list -w examples/vendor-selection
+./bin/ahp journal show latest -w examples/vendor-selection
+```
+
 Open the HTML report:
 
 ```bash

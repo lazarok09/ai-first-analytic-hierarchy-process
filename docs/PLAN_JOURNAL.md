@@ -1,6 +1,6 @@
 # Plan: Workspace journal (per-run CSV + results snapshots)
 
-**Status:** proposal (not implemented)  
+**Status:** Phase A implemented (default off)  
 **Date:** 2026-09-18  
 **Related:** [architecture.md](./architecture.md), [VISION.md](./VISION.md), [ROADMAP.md](./ROADMAP.md), `internal/workspace.WriteOutputs`
 
@@ -44,7 +44,7 @@ Dogfood sessions (headphones, hotel, monitor) already hit this: rankings move; `
 
 ---
 
-## Proposed layout
+## Layout
 
 Under the workspace root (next to `data/` and `output/`):
 
@@ -59,12 +59,6 @@ workspace/
       20260918T232215Z_compute_a1b2c3/
         meta.json       # run metadata
         data/           # copy of data/*.csv (+ optional constraints/quotes)
-          criteria.csv
-          alternatives.csv
-          pairwise.csv
-          attributes.csv
-          constraints.csv
-          quotes.csv
         results/
           weights.csv
           ranking.csv
@@ -74,192 +68,54 @@ workspace/
         summary.json    # small ranking + CR peek for list UIs
 ```
 
-**Why `tmp/journal/`**
-
-- Matches the request for a **tmp** folder: ephemeral, regenerable, not canonical state.
-- Keeps `data/` and `output/` semantics intact (agents already know those paths).
-- Easy to gitignore (`tmp/`) without ignoring example `data/`.
-
-**Run id**
-
-- Suggested: `YYYYMMDDTHHMMSSZ_<command>_<short-hash>`
-- Short hash = first 6–8 hex of a content hash of snapshotted `data/` (or of `compute.json`) so identical successive computes can be detected / deduped later.
+**Run id:** `YYYYMMDDTHHMMSSZ_<command>_<short-hash>` (first 8 hex of data content hash).
 
 ---
 
-## When to write a journal entry
+## When to write
 
-### Recommended default (v1)
-
-Write a journal entry **after a successful write of compute outputs**, i.e. inside or immediately after `Workspace.WriteOutputs`:
-
-| Trigger | Command / MCP | Why |
-|---------|---------------|-----|
-| Compute outputs written | `ahp compute`, `ahp render`, `ahp open` (unless `--no-compute`), MCP `compute` | Results exist; numbers are meaningful |
-
-Optional later (not default):
-
-| Trigger | Note |
-|---------|------|
-| Explicit `ahp journal snapshot` | Manual checkpoint without recompute |
-| After `pair apply` / `commit` | Judgment milestone; may only snapshot `data/` if no recompute |
-| After `rate` / `constrain` / `quote pick` | Noisy; prefer opt-in |
-
-**Do not** journal by default on pure inspection (`get`, `status`, `describe`, `doctor` without `--fix`).
+Write after a successful `Workspace.WriteOutputs` (`ahp compute` / `render` / `open`, MCP `compute`).
 
 ### Flags / config
 
 ```toml
-# ahp.toml (proposed extension)
 [journal]
-enabled = true          # default true once shipped, or false until stable
-dir = "tmp/journal"     # relative to workspace root
-keep = 50               # max runs; prune oldest
-include_html = false    # report.html is large; off by default
+enabled = true          # default false in Phase A
+dir = "tmp/journal"
+keep = 50
+include_html = false
 include_sensitivity = true
 ```
 
-CLI overrides:
-
 - `--journal` / `--no-journal` on compute-family commands
-- `AHP_JOURNAL=0` env kill-switch for CI / scripts
+- `AHP_JOURNAL=0` kill-switch; `AHP_JOURNAL=1` enables when config is off
 
 ---
 
-## What each entry stores
-
-### `meta.json`
-
-```json
-{
-  "id": "20260918T232215Z_compute_a1b2c3",
-  "created_at": "2026-09-18T23:22:15Z",
-  "command": "compute",
-  "argv": ["ahp", "compute", "-w", ".", "--include-proposals"],
-  "include_proposals": false,
-  "ahp_version": "0.3.0",
-  "workspace_title": "Choose a document-processing vendor",
-  "data_hash": "a1b2c3d4",
-  "complete": true,
-  "consistent": true,
-  "leader_id": "vendor_a",
-  "leader_weight": 0.4123
-}
-```
-
-### `data/`
-
-Byte-copy (or CSV re-serialize) of live workspace data files present at run time. Same schemas as [schema.md](./schema.md).
-
-### `results/`
-
-Reuse the same writers as `WriteOutputs` so journal artifacts match `output/` formats (no second encoding of AHP math):
-
-- `weights.csv`, `ranking.csv`, `compute.json` — **required**
-- `report.html` — optional (`include_html`)
-- `sensitivity.json` — copy if already on disk / if this run produced it
-
-`compute.json` already embeds matrix values, local weights, λmax / CI / CR, missing pairs, repairs — that covers “the matrix and the weights and the numbers.”
-
-### `summary.json`
-
-Small porcelain for `ahp journal list` without parsing full `compute.json`:
-
-```json
-{
-  "complete": true,
-  "consistent": true,
-  "top": [
-    {"rank": 1, "id": "vendor_a", "name": "Acme", "weight": 0.4123},
-    {"rank": 2, "id": "vendor_b", "name": "Beta", "weight": 0.3310}
-  ],
-  "worst_cr": {"matrix": "alt:cost", "cr": 0.087}
-}
-```
-
-### `index.jsonl`
-
-Append one line per run (path, timestamp, command, complete/consistent, leader). Enables fast listing without scanning every folder.
-
----
-
-## CLI surface (proposed)
+## CLI (Phase A)
 
 ```text
 ahp journal list [--limit N] [--json]
 ahp journal show <id|latest> [--json]
-ahp journal path <id|latest>          # print directory path
-ahp journal diff <idA> <idB>          # ranking + CR delta (v1 text/json)
-ahp journal prune [--keep N]          # enforce retention
-ahp journal snapshot                  # checkpoint data (+ optional compute)
-ahp journal clear                     # delete tmp/journal (confirm / --yes)
+ahp journal path <id|latest>
+ahp journal prune [--keep N]
 ```
-
-Examples:
 
 ```bash
-ahp compute                 # also writes tmp/journal/<id>/
+ahp compute --journal
 ahp journal list
 ahp journal show latest
-ahp journal diff 20260918T120000Z_compute_abc 20260918T180000Z_compute_def
 ```
-
-Exit / print: after compute, optionally one line:
-
-```text
-journal: tmp/journal/20260918T232215Z_compute_a1b2c3
-```
-
-(quiet when non-TTY or `--no-journal`).
 
 ---
 
 ## MCP
 
-Mirror workspace functions (no forked logic):
-
 | Tool | Maps to |
 |------|---------|
 | `journal_list` | `Workspace.JournalList` |
 | `journal_show` | `Workspace.JournalShow` |
-| `journal_diff` | `Workspace.JournalDiff` (later OK) |
-
-Compute / write-outputs path journals automatically when enabled; tools return `journal_id` / `journal_path` in the JSON payload.
-
-Catalog: add entries under `internal/catalog` + `ahp docs journal`.
-
----
-
-## Implementation sketch
-
-1. **`internal/workspace/journal.go`**
-   - `JournalDir()`, `WriteJournalEntry(meta, result, opts)`
-   - Copy data files; write results via existing CSV/JSON helpers used by `WriteOutputs`
-   - Append `index.jsonl`; prune by `keep`
-2. **Hook** `WriteOutputs` (or callers of it) so every successful output write can journal once.
-3. **`cmd/ahp/journal.go`** — Cobra subcommands.
-4. **`.gitignore`** — add `tmp/` (and/or `**/tmp/journal/`).
-5. **`EnsureLayout`** — do **not** create `tmp/` until first journal write (lazy).
-6. **Tests** — temp workspace: compute twice → two entries; prune keeps N; disabled flag writes nothing; `compute.json` in journal matches `output/compute.json`.
-
-Package boundary: journal I/O stays in `workspace`; engine unchanged.
-
----
-
-## Design choices / trade-offs
-
-| Choice | Recommendation | Rationale |
-|--------|----------------|-----------|
-| Where | `tmp/journal/` under workspace | Local, disposable, next to the decision |
-| Trigger | After `WriteOutputs` | Numbers exist; one hook covers compute/render/open |
-| HTML in journal | Off by default | Size; HTML is rebuildable from `compute.json` |
-| Dedup identical runs | Optional v1.1 | Same `data_hash` + same include flag → skip or soft-link |
-| Restore | Explicit later: `ahp journal restore <id>` copies `data/` back | Dangerous; needs confirm + `--yes` |
-| vs git | Journal is for **run artifacts**, not replacing VCS | Git tracks intentional commits; journal tracks every compute |
-
-**Rejected alternative:** overwrite a single `tmp/last-run/`. That loses history, which is the point of a journal.
-
-**Rejected alternative:** store only under OS `/tmp`. Harder for agents to find; dies across reboots; not tied to the workspace.
+| `compute` + `journal` | returns `journal_id` / `journal_path` when enabled |
 
 ---
 
@@ -267,12 +123,12 @@ Package boundary: journal I/O stays in `workspace`; engine unchanged.
 
 ### Phase A — MVP
 
-- [ ] `tmp/journal/<id>/{meta.json,data/,results/,summary.json}` + `index.jsonl`
-- [ ] Hook from `WriteOutputs`
-- [ ] `ahp journal list|show|path|prune`
-- [ ] gitignore `tmp/`
-- [ ] Tests + one line on compute success
-- [ ] MCP: return journal path from compute; `journal_list` / `journal_show`
+- [x] `tmp/journal/<id>/{meta.json,data/,results/,summary.json}` + `index.jsonl`
+- [x] Hook from `WriteOutputs`
+- [x] `ahp journal list|show|path|prune`
+- [x] gitignore `tmp/`
+- [x] Tests + one line on compute success
+- [x] MCP: return journal path from compute; `journal_list` / `journal_show`
 
 ### Phase B — Compare & restore
 
@@ -289,25 +145,9 @@ Package boundary: journal I/O stays in `workspace`; engine unchanged.
 
 ---
 
-## Success criteria
+## Open questions (Phase A answers)
 
-1. Two successive `ahp compute` runs with a pairwise edit between them leave **two** journal folders with different rankings.
-2. `results/weights.csv` and `results/ranking.csv` in a journal entry match what `output/` held at that moment.
-3. Disabling journal (`--no-journal` / config) leaves behavior identical to today.
-4. `go test ./...` green; MCP compute payload includes journal path when enabled.
-5. Docs: short section in README / QUICKSTART pointing at `ahp journal list`.
-
----
-
-## Open questions
-
-1. **Default on or off?** Safer ship: default **off** until Phase A is dogfooded, then default **on** with `keep = 50`.
-2. **Should `include-proposals` runs be tagged / separated** from committed-only journals in `list` filters?
-3. **Restore scope:** data-only vs data+output?
-4. **Retention unit:** count of runs vs age (e.g. 7 days)?
-
----
-
-## Suggested first PR
-
-Implement Phase A only: journal writer + list/show/path/prune + gitignore + tests + compute hook. No restore, no diff UI.
+1. **Default on or off?** **Off** until dogfooded; enable with `--journal`, `AHP_JOURNAL=1`, or `[journal] enabled = true`.
+2. **`include-proposals`:** tagged in `meta.include_proposals`; list filters deferred.
+3. **Restore scope:** deferred to Phase B (lean data-only).
+4. **Retention:** count of runs (`keep = 50`).

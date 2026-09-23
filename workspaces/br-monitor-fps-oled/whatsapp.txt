@@ -1,0 +1,41 @@
+*Monitor FPS BR ≥27" QHD ≤R$2500 — resposta real*
+
+🥇 *ASUS TUF VG27AQML5F*
+💵 1699.99 BRL (KaBuM Pix 1P)
+• panel: 84 score (manufacturer)
+• size: 27 inch (manufacturer)
+• refresh: 320 Hz (manufacturer)
+• response: 92 score (Hz-led motion (LCD class))
+• clarity: 1440 px_v (spec)
+
+🥈 *ASUS TUF VG27AQME5F*
+💵 1499.99 BRL (KaBuM Pix 1P)
+• clarity: 1440 px_v (spec)
+• panel: 85 score (manufacturer)
+• size: 27 inch (manufacturer)
+• refresh: 255 Hz (manufacturer)
+• response: 86 score (Hz-led motion (LCD class))
+
+🥉 *ASUS ROG Strix XG27ACSR*
+💵 1499.99 BRL (KaBuM Pix 1P)
+• size: 27 inch (manufacturer)
+• refresh: 220 Hz (manufacturer)
+• response: 82 score (Hz-led motion (LCD class))
+• clarity: 1440 px_v (spec)
+• panel: 88 score (manufacturer)
+
+4. *ASUS ROG Strix XG27ACS*
+💵 1299.99 BRL (KaBuM Pix 1P)
+• clarity: 1440 px_v (spec)
+• panel: 90 score (Tom's Hardware)
+• size: 27 inch (manufacturer)
+• refresh: 180 Hz (manufacturer)
+• response: 78 score (Tom's Hardware + Hz)
+
+5. *Gigabyte G27Q2*
+💵 1249.99 BRL (KaBuM Pix 1P)
+• size: 27 inch (manufacturer)
+• refresh: 210 Hz (manufacturer)
+• response: 80 score (Hz-led motion (LCD class))
+• clarity: 1440 px_v (spec)
+• panel: 83 score (manufacturer)

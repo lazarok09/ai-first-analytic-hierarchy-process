@@ -57,7 +57,7 @@ td.num,th.num{text-align:right}.bar{height:10px;background:#ece7dc}.bar>span{dis
 	}
 	b.WriteString(`</div>
 <nav class="toc" style="margin-top:1rem">
-<a href="#method">Method</a><a href="#ranking">Ranking</a><a href="#explain">Explain</a><a href="#weights">Weights</a>
+<a href="#method">Method</a><a href="#ranking">Ranking</a><a href="#comparative">Absolute / Gaussian</a><a href="#explain">Explain</a><a href="#weights">Weights</a>
 <a href="#repairs">CR repairs</a><a href="#matrices">Matrices</a><a href="#data">CSV data</a>
 </nav></header><main>`)
 
@@ -72,8 +72,8 @@ td.num,th.num{text-align:right}.bar{height:10px;background:#ece7dc}.bar>span{dis
 	b.WriteString(`<section id="method"><h2>How this method works</h2>
 <p>AHP turns a decision into a hierarchy (goal → criteria → alternatives), then asks for pairwise Saaty judgments (1 = equal, 9 = extreme preference). Each complete reciprocal matrix has a principal eigenvector: those entries are the local weights. Consistency ratio (CR) flags whether the judgments contradict each other; CR ≤ 0.10 is the usual acceptance cut.</p>
 <p>Global alternative scores are the weighted sum of local scores across leaf criteria. Objective facts live in <code>data/attributes.csv</code> so they can inform human (or proposed) judgments without becoming the ranking themselves.</p>
-<p class="muted">Edit CSVs, then re-run <code>ahp compute</code>. Proposal rows are ignored until status is <code>committed</code>.</p>
-</section><section id="ranking"><h2>Global ranking</h2>`)
+<p class="muted">Edit CSVs, then re-run <code>ahp compute</code>. Proposal rows are ignored until status is <code>committed</code>. Opt-in comparative views: <code>ahp absolute</code> / <code>ahp gaussian</code> (Santos absolute measurement + σ/μ reweight) — see below. Those scores have <strong>no Saaty CR</strong>.</p>
+</section><section id="ranking"><h2>Global ranking (Saaty)</h2>`)
 
 	if len(result.Ranking) == 0 {
 		b.WriteString(`<p class="muted">No alternatives yet.</p>`)
@@ -85,6 +85,8 @@ td.num,th.num{text-align:right}.bar{height:10px;background:#ece7dc}.bar>span{dis
 		}
 		b.WriteString(`</tbody></table>`)
 	}
+
+	writeComparativeSection(&b, result)
 
 	// Contribution breakdown (Phase B explain).
 	if len(result.Ranking) > 0 && len(result.LeafWeights) > 0 {
@@ -287,4 +289,43 @@ func explainInputs(result *workspace.ComputeResult) (
 		critNames[c.ID] = c.Name
 	}
 	return leaf, local, altIDs, altNames, critNames
+}
+
+func writeComparativeSection(b *strings.Builder, result *workspace.ComputeResult) {
+	if result.Gaussian == nil && result.Absolute == nil {
+		return
+	}
+	b.WriteString(`</section><section id="comparative"><h2>Absolute / Gaussian (comparative)</h2>
+<p class="muted">Dispersion (σ/μ) is not decision-maker importance. These scores have <strong>no Saaty CR</strong>. Saaty ranking above remains canonical unless you explicitly choose a comparative mode.</p>`)
+	if result.Absolute != nil {
+		fmt.Fprintf(b, `<h3>Absolute / hybrid (%s)</h3>`, html.EscapeString(result.Absolute.Method))
+		if len(result.Absolute.Ranking) > 0 {
+			b.WriteString(`<table><thead><tr><th>Rank</th><th>Alternative</th><th class="num">Score</th></tr></thead><tbody>`)
+			for _, r := range result.Absolute.Ranking {
+				fmt.Fprintf(b, `<tr><td>%d</td><td>%s</td><td class="num">%.4f</td></tr>`,
+					r.Rank, html.EscapeString(r.Name), r.Weight)
+			}
+			b.WriteString(`</tbody></table>`)
+		} else if result.Absolute.Matrix != nil {
+			fmt.Fprintf(b, `<p class="muted">Decision matrix ready (%d criteria × %d alternatives). Hybrid ranking unavailable — complete criteria pairwise with CR ≤ 0.10, or use <code>ahp gaussian</code>.</p>`,
+				len(result.Absolute.Matrix.Columns), len(result.Absolute.Matrix.AlternativeIDs))
+		}
+	}
+	if result.Gaussian != nil && len(result.Gaussian.Ranking) > 0 {
+		b.WriteString(`<h3>AHP-Gaussian</h3>`)
+		if result.Gaussian.Result != nil && len(result.Gaussian.Result.Factors) > 0 {
+			b.WriteString(`<table><thead><tr><th>Criterion</th><th class="num">μ</th><th class="num">σ</th><th class="num">f=σ/μ</th><th class="num">w</th></tr></thead><tbody>`)
+			for _, f := range result.Gaussian.Result.Factors {
+				fmt.Fprintf(b, `<tr><td>%s</td><td class="num">%.4f</td><td class="num">%.4f</td><td class="num">%.4f</td><td class="num">%.4f</td></tr>`,
+					html.EscapeString(f.CriterionID), f.Mean, f.SD, f.Factor, f.Weight)
+			}
+			b.WriteString(`</tbody></table>`)
+		}
+		b.WriteString(`<table><thead><tr><th>Rank</th><th>Alternative</th><th class="num">Score</th></tr></thead><tbody>`)
+		for _, r := range result.Gaussian.Ranking {
+			fmt.Fprintf(b, `<tr><td>%d</td><td>%s</td><td class="num">%.4f</td></tr>`,
+				r.Rank, html.EscapeString(r.Name), r.Weight)
+		}
+		b.WriteString(`</tbody></table>`)
+	}
 }

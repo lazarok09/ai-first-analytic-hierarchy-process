@@ -69,6 +69,13 @@ go build -o bin/ahp ./cmd/ahp
 
 You get ranking + CR, a contribution breakdown, and `examples/vendor-selection/output/report.html`.
 
+To keep a local history of computes (snapshots under `tmp/journal/`, gitignored):
+
+```bash
+./bin/ahp compute -w examples/vendor-selection --journal
+./bin/ahp journal list -w examples/vendor-selection
+```
+
 ---
 
 ## How it works

@@ -17,9 +17,11 @@ func cmdConstrain() *cobra.Command {
 synthesis and flagged by ahp doctor.
 
   ahp constrain value --min 200 --max 400 --unit BRL --prefer lower
+  ahp constrain quality --prefer higher   # direction-only (absolute/Gaussian)
   ahp constrain parking --must-have   # require truthy attribute (1/true/yes)
 
-Omit flags to list current constraints. Prefer is used by purchase integrity.`,
+Omit flags to list current constraints. Prefer is used by purchase integrity
+and by ahp absolute / ahp gaussian.`,
 		Args:          cobra.MaximumNArgs(1),
 		SilenceUsage:  true,
 		SilenceErrors: true,
@@ -29,7 +31,7 @@ Omit flags to list current constraints. Prefer is used by purchase integrity.`,
 	c.Flags().String("min", "", "Minimum allowed attribute value")
 	c.Flags().String("max", "", "Maximum allowed attribute value")
 	c.Flags().String("unit", "", "Required attribute unit (e.g. BRL)")
-	c.Flags().String("prefer", "", "higher|lower for purchase direction checks")
+	c.Flags().String("prefer", "", "higher|lower — direction for purchase checks and absolute/Gaussian")
 	c.Flags().Bool("must-have", false, "Require truthy attribute (parking/breakfast-style filter)")
 	c.Flags().String("note", "", "Optional note")
 	return c
@@ -84,8 +86,8 @@ func runConstrain(cmd *cobra.Command, args []string) error {
 		}
 		item.Max = &v
 	}
-	if !item.MustHave && item.Min == nil && item.Max == nil && unit == "" {
-		return cliout.NewExitError(cliout.ExitUsage, "provide --must-have and/or --min, --max, or --unit")
+	if !item.MustHave && item.Min == nil && item.Max == nil && unit == "" && prefer == "" {
+		return cliout.NewExitError(cliout.ExitUsage, "provide --prefer, --must-have, and/or --min, --max, or --unit")
 	}
 
 	criteria, err := ws.Criteria()

@@ -1,0 +1,31 @@
+alternative_id,criterion_id,value,unit,source,note
+tronos,value,899,BRL,Mercado Livre MLB63816242 2026-09-19,Promo R$899 (lista R$2300). Loja oficial Tronos.
+avento,value,754.66,BRL,Mercado Livre MLB60955366 2026-09-19,"Promo R$754,66 (lista R$1300). Encosto espuma + base."
+rovik,value,883.93,BRL,Mercado Livre MLBU4674190057 2026-09-19,"Promo R$883,93 kit base+encosto"
+rovik,capacity,7.5,score,ML PDP 2026-09-19,Dim 58×44×34; claim 2 capacetes
+rovik,kit,3,score,ML PDP 2026-09-19,Base + encosto explícitos
+tronos,liters,65,L,ML PDP 2026-09-19,Capacidade 65L
+tronos,cushion,1,bool,ML PDP 2026-09-19,Almofada/encosto passageiro
+tronos,support,1,bool,ML PDP 2026-09-19,Inclui suporte/base = Sim
+avento,liters,65,L,ML PDP 2026-09-19,Capacidade 65L
+avento,aluminum,1,bool,ML PDP 2026-09-19,Alumínio
+avento,cushion,1,bool,ML PDP 2026-09-19,Almofada/encosto passageiro
+avento,support,1,bool,ML PDP 2026-09-19,Inclui suporte/base = Sim
+rovik,liters,65,L,ML PDP 2026-09-19,Capacidade 65L
+rovik,aluminum,1,bool,ML PDP 2026-09-19,Alumínio
+rovik,cushion,1,bool,ML PDP 2026-09-19,Almofada/encosto passageiro
+rovik,support,1,bool,ML PDP 2026-09-19,Inclui suporte/base = Sim
+rovik,security,1,bool,ML PDP 2026-09-19,Trava/chave/anti-roubo
+avento,trust,38,score,ML reviews 2026-09-19,4.9×ln(1+224)≈26.6 + bônus conteúdo: 133 comentários majoritariamente 5★; elogios a trava e robustez
+avento,brand,7.5,score,ML reviews 2026-09-19,Reviews: grande/robusta/firme/resistente; acabamento impecável; design diferenciado
+avento,capacity,7.5,score,ML reviews 2026-09-19,IA+reviews: cabe 2 capacetes / bagagem; vedação boa
+avento,kit,2.5,score,ML reviews 2026-09-19,Base inclusa mas vários relatam furação/adaptador extra; sem chave allen
+avento,security,1,bool,ML reviews 2026-09-19,Reviews: sistema de trava top — passa must-have com qualidade alta
+tronos,trust,28,score,ML reviews 2026-09-19,4.7×ln(1+166)≈24.1; 80 comentários; utilidade alta nos negativos (trava/base)
+tronos,brand,6,score,ML reviews 2026-09-19,Loja oficial mas reviews: dúvida se é alumínio; base ferro enferruja
+tronos,capacity,8,score,ML reviews 2026-09-19,2 Norisk 60 com folga; cross/esportivo (AGV K1) NÃO cabem dois
+tronos,kit,2,score,ML reviews 2026-09-19,Base inclusa mas ferro/oxida; forro interno elogiado; encosto ok
+tronos,security,1,bool,ML reviews 2026-09-19,Tem trava MAS review útil#1: anti-roubo falso — remove forçando desengate; não deixar nada caro
+rovik,trust,3,score,ML reviews 2026-09-19,Sem opiniões úteis no PDP; +5 vendidos
+rovik,brand,4,score,ML reviews 2026-09-19,Sem prova social de qualidade real
+tronos,aluminum,1,bool,ML reviews 2026-09-19,Anúncio alumínio; 1 review duvida (parece plástico). Mantém must-have; brand já penalizado

@@ -175,8 +175,8 @@ Defaults unchanged so old workspaces don’t silently shift.
 | Incomplete pairwise | `compute --incomplete=harker\|rgmm\|none` | Replace equal-weight fallback |
 | RGMM priorities | `compute --priority=eigen\|rgmm` | Emit GCI with CR |
 | Ideal synthesis | `compute --synthesis=distributive\|ideal` | |
-| Attribute ratings | `ahp rate` (opt-in) | Absolute measurement; never silent |
-| Optional Gaussian view | report section | Comparative only; Saaty stays canonical |
+| Attribute ratings | `ahp rate` (opt-in) | `--mode=saaty` lossy proposals; `--mode=sum-norm` preview |
+| Optional Gaussian view | `ahp gaussian` / `compute --method=compare` | Comparative only; Saaty stays canonical — see [PLAN_SANTOS_AHP_METHOD_STRICT.md](./PLAN_SANTOS_AHP_METHOD_STRICT.md) |
 
 **Tests:** fixtures in `internal/engine`; `go test ./...` green.
 

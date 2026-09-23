@@ -1,0 +1,8 @@
+criterion_id,min,max,unit,prefer,must_have,note
+aluminum,,,,,true,Obrigatório alumínio
+cushion,,,,,true,Obrigatório almofada/encosto
+liters,65,65,L,,,Exatamente 65 litros
+security,,,,,true,Obrigatório trava/segurança
+support,,,,,true,Obrigatório suporte/base incluso
+value,200,1500,BRL,lower,,Budget ≤R$1500
+capacity,1,10,score,higher,,Score útil entre elegíveis

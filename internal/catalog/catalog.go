@@ -54,18 +54,20 @@ var entries = []Entry{
 	},
 	{
 		ID: "doctor", CLI: "ahp doctor", MCP: "",
-		Short: "Diagnose schema, missing pairs, CR, constraints, purchase integrity",
+		Short: "Diagnose schema, missing pairs, CR, constraints, purchase/method integrity",
 		Examples: []string{
 			"ahp doctor",
 			"ahp doctor --purchase --json",
+			"ahp doctor --method --json",
 			"ahp doctor --strict --json",
 		},
 	},
 	{
 		ID: "constrain", CLI: "ahp constrain", MCP: "constrain",
-		Short: "Set attribute eligibility band (min/max/unit) or --must-have",
-		Long:  "Writes data/constraints.csv; out-of-band alts are excluded from synthesis. Use --must-have for parking-style truthy filters.",
+		Short: "Set prefer direction and/or eligibility band (min/max/unit) or --must-have",
+		Long:  "Writes data/constraints.csv. --prefer higher|lower alone is enough for absolute/Gaussian. Out-of-band alts are excluded from synthesis.",
 		Examples: []string{
+			"ahp constrain quality --prefer higher",
 			"ahp constrain value --min 200 --max 400 --unit BRL --prefer lower",
 			"ahp constrain parking --must-have",
 			"ahp constrain --json",
@@ -132,7 +134,34 @@ var entries = []Entry{
 	{
 		ID: "compute", CLI: "ahp compute", MCP: "compute",
 		Short: "Solve eigenvectors, CR, synthesis; write outputs",
-		Examples: []string{"ahp compute", "ahp compute --include-proposals"},
+		Long:  "Default --method=saaty. Opt-in --method=gaussian|hybrid|absolute|compare for comparative views.",
+		Examples: []string{
+			"ahp compute",
+			"ahp compute --include-proposals",
+			"ahp compute --method=compare",
+			"ahp compute --journal",
+		},
+	},
+	{
+		ID: "journal-list", CLI: "ahp journal list", MCP: "journal_list",
+		Short: "List tmp/journal compute snapshots",
+		Long:  "Journaling is off by default. Enable with --journal, AHP_JOURNAL=1, or [journal] enabled=true.",
+		Examples: []string{"ahp journal list", "ahp journal list --limit 5 --json"},
+	},
+	{
+		ID: "journal-show", CLI: "ahp journal show", MCP: "journal_show",
+		Short: "Show meta + summary for a journal run",
+		Examples: []string{"ahp journal show latest", "ahp journal show <id> --json"},
+	},
+	{
+		ID: "journal-path", CLI: "ahp journal path", MCP: "",
+		Short: "Print absolute path of a journal run directory",
+		Examples: []string{"ahp journal path latest"},
+	},
+	{
+		ID: "journal-prune", CLI: "ahp journal prune", MCP: "",
+		Short: "Delete oldest journal runs beyond --keep",
+		Examples: []string{"ahp journal prune --keep 20"},
 	},
 	{
 		ID: "explain", CLI: "ahp explain", MCP: "explain",
@@ -154,14 +183,30 @@ var entries = []Entry{
 	},
 	{
 		ID: "rate", CLI: "ahp rate", MCP: "suggest_from_attributes",
-		Short: "Opt-in: attributes → Saaty pairwise proposals (never commits)",
-		Long:  "Alias of ahp pair suggest-from-attributes. Use --prefer lower for price; --stretch for tight bands; zeros allowed via affine shift; --refresh demotes committed→proposal.",
+		Short: "Opt-in: attributes → Saaty proposals (--mode=saaty) or sum-norm preview",
+		Long:  "Default --mode=saaty is lossy ratio→Saaty proposals. --mode=sum-norm previews Santos sum-norm locals (no pairwise write).",
 		Examples: []string{
 			"ahp rate --criterion value --prefer lower --dry-run",
+			"ahp rate --mode=sum-norm --criterion value --prefer lower",
 			"ahp rate --criterion quality --prefer higher --stretch",
-			"ahp rate --criterion value --prefer lower --refresh",
 			"ahp pair suggest-from-attributes --criterion value --prefer lower",
 		},
+	},
+	{
+		ID: "gaussian", CLI: "ahp gaussian", MCP: "gaussian",
+		Short: "Comparative AHP-Gaussian ranking from attributes (σ/μ weights)",
+		Long:  "Requires prefer on attribute-ready leaves. Writes output/gaussian.json. No Saaty CR.",
+		Examples: []string{
+			"ahp constrain quality --prefer higher",
+			"ahp gaussian",
+			"ahp gaussian --json",
+		},
+	},
+	{
+		ID: "absolute", CLI: "ahp absolute", MCP: "absolute",
+		Short: "Sum-norm attributes; hybrid score with criteria weights when available",
+		Long:  "Writes output/absolute.json. Comparative only.",
+		Examples: []string{"ahp absolute", "ahp absolute --json"},
 	},
 	{
 		ID: "pair-suggest-from-attributes", CLI: "ahp pair suggest-from-attributes", MCP: "suggest_from_attributes",

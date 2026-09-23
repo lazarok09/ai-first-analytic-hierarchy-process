@@ -1,0 +1,7 @@
+id,name,parent_id,description
+clarity,Resolução / nitidez,,Preferência QHD; 4K bônus se OLED rápido. FHD excluído.
+panel,Qualidade do painel OLED,,"WOLED gen4 / QD-OLED: contraste, gamut, revestimento, care features."
+refresh,Taxa de atualização (FPS),,Hz nativo para suavidade e sample-and-hold blur menor em shooters.
+response,Resposta / motion real,,Pixel response medido + motion clarity (persistência). OLED ~0.2–0.3ms GtG sem overshoot (TechSpot/TFTCentral). NÃO usar 0.03ms de caixa.
+size,"Tamanho (≥27"")",,"Hard eligibility ≥27in; ranking weight very low (filter, not preference)."
+value,Preço BR (Pix),,Street Pix KaBuM 1P; secundário vs velocidade.

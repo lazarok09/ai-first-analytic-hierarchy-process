@@ -1,0 +1,31 @@
+alternative_id,criterion_id,value,unit,source,note
+asus_vg27aqml5f,value,1699.99,BRL,KaBuM Pix 1P,R$1699.99 Pix (lista 1888.88). Produto 1017205. 2026-09-22.
+asus_vg27aqme5f,value,1499.99,BRL,KaBuM Pix 1P,R$1499.99 Pix (lista 1666.66). Produto 1017203. 2026-09-22.
+asus_xg27acsr,value,1499.99,BRL,KaBuM Pix 1P,R$1499.99 Pix (lista 1666.66). Produto 1017204. 2026-09-22.
+gigabyte_g27q2,value,1249.99,BRL,KaBuM Pix 1P,R$1249.99 Pix (lista 1388.88). Produto 994947. 2026-09-22.
+asus_xg27acs,value,1299.99,BRL,KaBuM Pix 1P,R$1299.99 Pix (lista 1444.43). Produto 626864. 2026-09-22.
+asus_vg27aqml5f,size,27,inch,manufacturer,27in
+asus_vg27aqme5f,size,27,inch,manufacturer,27in
+asus_xg27acsr,size,27,inch,manufacturer,27in
+gigabyte_g27q2,size,27,inch,manufacturer,27in
+asus_xg27acs,size,27,inch,manufacturer,27in
+asus_vg27aqml5f,refresh,320,Hz,manufacturer,Native 320Hz curved Fast IPS
+asus_vg27aqme5f,refresh,255,Hz,manufacturer,Native 255Hz Fast IPS
+asus_xg27acsr,refresh,220,Hz,manufacturer,Native 220Hz Fast IPS
+gigabyte_g27q2,refresh,210,Hz,manufacturer,200 native / 210 OC
+asus_xg27acs,refresh,180,Hz,manufacturer,Native 180Hz Fast IPS
+asus_vg27aqml5f,response,92,score,Hz-led motion (LCD class),Fast IPS ~3–6ms real GtG class; 320Hz cuts persistence blur most in band. Ignore 0.3ms MPRT claim.
+asus_vg27aqme5f,response,86,score,Hz-led motion (LCD class),"255Hz Fast IPS; same GtG class, more blur than 320."
+asus_xg27acsr,response,82,score,Hz-led motion (LCD class),220Hz ROG Fast IPS.
+gigabyte_g27q2,response,80,score,Hz-led motion (LCD class),210Hz SS IPS; marketing 0.5ms ignored.
+asus_xg27acs,response,78,score,Tom's Hardware + Hz,Tom's: best OD tuning in peer set but 180Hz — more persistence blur vs 255–320 tier. Draw ~6ms B→W typical IPS.
+asus_vg27aqml5f,clarity,1440,px_v,spec,QHD 2560x1440
+asus_vg27aqme5f,clarity,1440,px_v,spec,QHD 2560x1440
+asus_xg27acsr,clarity,1440,px_v,spec,QHD 2560x1440
+gigabyte_g27q2,clarity,1440,px_v,spec,QHD 2560x1440
+asus_xg27acs,clarity,1440,px_v,spec,QHD 2560x1440
+asus_xg27acs,panel,90,score,Tom's Hardware,97% DCI-P3 HDR400; excellent OD/ELMB flexibility
+asus_xg27acsr,panel,88,score,manufacturer,ROG Fast IPS HDR400 lineage
+asus_vg27aqml5f,panel,84,score,manufacturer,"TUF Fast IPS curvo — Hz king, curva pode distrair em FPS"
+asus_vg27aqme5f,panel,85,score,manufacturer,TUF Fast IPS flat 255Hz
+gigabyte_g27q2,panel,83,score,manufacturer,SS IPS ~95% DCI-P3 class
