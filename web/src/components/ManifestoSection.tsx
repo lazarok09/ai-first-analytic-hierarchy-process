@@ -27,7 +27,7 @@ export function ManifestoSection({
 }: Props) {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { amount: 0.4, margin: "-8% 0px -8% 0px" });
-  const { setActive } = useScrollState();
+  const { setActive, flash } = useScrollState();
   const [lineDone, setLineDone] = useState(false);
   const [subDone, setSubDone] = useState(false);
 
@@ -39,16 +39,13 @@ export function ManifestoSection({
     <section
       id={id}
       ref={ref}
-      className={`section-shell ${align === "right" ? "justify-end text-right" : ""}`}
+      className={`section-shell ${align === "right" ? "text-right" : ""}`}
+      data-flash={flash?.id === id ? String(flash.token) : undefined}
       aria-labelledby={`${id}-line`}
     >
-      <div
-        className={`relative max-w-3xl ${align === "right" ? "ml-auto" : ""}`}
-      >
+      <div className="stage relative">
         <div
-          className={`pointer-events-none absolute -inset-x-10 -inset-y-12 -z-10 rounded-[2rem] bg-[radial-gradient(ellipse_at_center,rgba(10,12,15,0.88),transparent_70%)] ${
-            align === "right" ? "ml-auto" : ""
-          }`}
+          className="pointer-events-none absolute -inset-x-8 -inset-y-10 -z-10 rounded-[2rem] bg-[radial-gradient(ellipse_at_center,rgba(10,12,15,0.88),transparent_70%)]"
           aria-hidden
         />
 

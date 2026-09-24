@@ -15,36 +15,42 @@ export const SITE = {
 export const SECTIONS = [
   {
     id: "hook",
+    title: "AHP",
     kicker: "01 — AHP",
     line: "A decision made by science.",
     sub: "Ask a question. Name what matters. What you get back is ranked by the Analytic Hierarchy Process — options compared side by side with science, so you can trust the answer. Agents collect and calculate; you pick the winner.",
   },
   {
     id: "lie",
+    title: "Prove it",
     kicker: "02 — PROVE IT",
     line: "Gut can pick a winner. It can’t prove the race.",
     sub: "In most real decisions we justify the choice by feel — and never show how good it was next to the others. Now you can.",
   },
   {
     id: "stance",
+    title: "Yours",
     kicker: "03 — YOURS",
     line: "The hierarchy lives in your files.",
     sub: "We don’t hold your data. No cloud, cookies, or third parties. You are safe to ask anything.",
   },
   {
     id: "agent",
+    title: "Contract",
     kicker: "04 — CONTRACT",
     line: "Let them draft. You sign.",
     sub: "Your agent gathers the options, runs the comparisons, and does the math. You just choose the best one.",
   },
   {
     id: "proof",
+    title: "Report",
     kicker: "05 — REPORT",
     line: "See the thinking behind the decision.",
     sub: "The HTML report shows your comparisons, the resulting weights, and where consistency broke — so you can fix the judgment, not guess the winner.",
   },
   {
     id: "close",
+    title: "Install",
     kicker: "06 — INSTALL",
     line: "Never be unsure about a call.",
     sub: "Start using it now — bring structure to any decision you’ve been making blind.",

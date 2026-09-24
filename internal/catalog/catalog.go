@@ -143,6 +143,16 @@ var entries = []Entry{
 		},
 	},
 	{
+		ID: "open", CLI: "ahp open", MCP: "render_report",
+		Short: "Recompute report.html and open it with the OS default app",
+		Long:  "Writes output/report.html then launches it (xdg-open / open / rundll32; WSL falls back to Windows). Use --no-open to print the path only; --no-compute to skip recompute.",
+		Examples: []string{
+			"ahp open",
+			"ahp open --no-compute",
+			"ahp open --no-open",
+		},
+	},
+	{
 		ID: "journal-list", CLI: "ahp journal list", MCP: "journal_list",
 		Short: "List tmp/journal compute snapshots",
 		Long:  "Journaling is off by default. Enable with --journal, AHP_JOURNAL=1, or [journal] enabled=true.",

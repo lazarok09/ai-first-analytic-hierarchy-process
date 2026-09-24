@@ -9,6 +9,7 @@ import (
 	"github.com/lazarok09/ahp-method/internal/cliout"
 	ahpmcp "github.com/lazarok09/ahp-method/internal/mcp"
 	"github.com/lazarok09/ahp-method/internal/render"
+	"github.com/lazarok09/ahp-method/internal/sysopen"
 	"github.com/lazarok09/ahp-method/internal/workspace"
 	"github.com/spf13/cobra"
 )
@@ -206,11 +207,15 @@ func cmdRender() *cobra.Command {
 
 func cmdOpen() *cobra.Command {
 	c := &cobra.Command{
-		Use:   "open",
-		Short: "Recompute and print report.html path (open in browser manually if needed)",
+		Use:           "open",
+		Short:         "Recompute report.html and open it with the OS default app",
+		SilenceUsage:  true,
+		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			include, _ := cmd.Flags().GetBool("include-proposals")
 			noCompute, _ := cmd.Flags().GetBool("no-compute")
+			noOpen, _ := cmd.Flags().GetBool("no-open")
+			jsonOut, _ := cmd.Flags().GetBool("json")
 			ws, err := openWS(wsFlag(cmd))
 			if err != nil {
 				return err
@@ -230,9 +235,22 @@ func cmdOpen() *cobra.Command {
 					fmt.Println("journal:", jp)
 				}
 			}
-			abs, _ := filepath.Abs(report)
+			abs, err := filepath.Abs(report)
+			if err != nil {
+				return cliout.Wrap(cliout.ExitIO, err)
+			}
+			if _, err := os.Stat(abs); err != nil {
+				return cliout.Wrap(cliout.ExitIO, fmt.Errorf("report not found: %s (run without --no-compute)", abs))
+			}
+			fileURL := "file://" + filepath.ToSlash(abs)
 			fmt.Println("report:", abs)
-			fmt.Println("file://" + filepath.ToSlash(abs))
+			fmt.Println(fileURL)
+			if noOpen || jsonOut {
+				return nil
+			}
+			if err := sysopen.Open(abs); err != nil {
+				return cliout.Wrap(cliout.ExitIO, fmt.Errorf("open report: %w", err))
+			}
 			return nil
 		},
 	}
@@ -240,6 +258,7 @@ func cmdOpen() *cobra.Command {
 	addIncludeFlag(c)
 	addJournalFlags(c)
 	c.Flags().Bool("no-compute", false, "Do not recompute before opening")
+	c.Flags().Bool("no-open", false, "Print path only; do not launch the OS file opener")
 	return c
 }
 
