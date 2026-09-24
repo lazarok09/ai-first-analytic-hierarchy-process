@@ -74,7 +74,7 @@ func TestSortedMatrixKeysOrder(t *testing.T) {
 	}
 }
 
-func TestHTMLTOCFlashAndTitles(t *testing.T) {
+func TestHTMLTOCTitlesNoScript(t *testing.T) {
 	htmlOut := HTML(&workspace.ComputeResult{
 		Title: "Sample decision",
 		Matrices: map[string]workspace.MatrixPayload{
@@ -88,12 +88,12 @@ func TestHTMLTOCFlashAndTitles(t *testing.T) {
 		LeafWeights: map[string]float64{"value": 1},
 	})
 
+	if strings.Contains(htmlOut, "<script") {
+		t.Fatal("report HTML must not include JavaScript")
+	}
 	for _, want := range []string{
 		"IBM Plex Sans",
 		"tabular-nums",
-		"toc-border-blink",
-		`nav.toc a[href^="#"]`,
-		`setAttribute("data-flash"`,
 		`>How this method works</a>`,
 		`>Global ranking (Saaty)</a>`,
 		`>Contribution breakdown</a>`,
@@ -237,13 +237,14 @@ func TestMatrixDialog(t *testing.T) {
 	for _, want := range []string{
 		`command="show-modal"`,
 		`commandfor="matrix-criteria-dialog"`,
-		`<dialog id="matrix-criteria-dialog" class="matrix-dialog"`,
+		`<dialog id="matrix-criteria-dialog" class="matrix-dialog" closedby="any"`,
 		`method="dialog"`,
 		`class="matrix-expand"`,
 		`>Expand</button>`,
 		`>Close</button>`,
 		`width:80vw`,
 		`max-width:80%`,
+		`closedby="any"`,
 	} {
 		if !strings.Contains(htmlOut, want) {
 			t.Fatalf("missing %q in matrix dialog HTML", want)

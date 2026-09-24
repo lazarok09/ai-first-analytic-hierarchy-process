@@ -69,22 +69,22 @@ export function ManifestoSection({
             className="manifesto-line"
             text={line}
             active={inView}
-            cps={32}
-            delayMs={180}
+            cps={16}
+            delayMs={280}
             onDone={() => setLineDone(true)}
           />
         </motion.div>
 
         {/* Sub always reserves its final height; only fades in when line finishes */}
         <motion.div
-          className={`mt-6 ${align === "right" ? "ml-auto" : ""}`}
+          className={`mt-10 ${align === "right" ? "ml-auto" : ""}`}
           initial={false}
           animate={
             inView && lineDone
               ? { opacity: 1 }
               : { opacity: 0 }
           }
-          transition={{ duration: 0.55, ease }}
+          transition={{ duration: 0.75, ease }}
           style={{ pointerEvents: inView && lineDone ? "auto" : "none" }}
         >
           <StreamText
@@ -92,8 +92,8 @@ export function ManifestoSection({
             className={`subline ${align === "right" ? "ml-auto" : ""}`}
             text={sub}
             active={inView && lineDone}
-            cps={48}
-            delayMs={80}
+            cps={22}
+            delayMs={420}
             showCursor
             onDone={() => setSubDone(true)}
           />

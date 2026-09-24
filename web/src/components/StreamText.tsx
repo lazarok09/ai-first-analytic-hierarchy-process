@@ -98,7 +98,12 @@ export function StreamText({
 
       const jitter = 0.65 + Math.random() * 0.7;
       const ch = text[next - 1];
-      const pause = ch === "." || ch === "—" || ch === "," ? 90 : 0;
+      const pause =
+        ch === "." || ch === "—" || ch === "," || ch === "!" || ch === "?"
+          ? 220
+          : ch === " "
+            ? 40
+            : 0;
       schedule((1000 / cps) * jitter + pause);
     };
 

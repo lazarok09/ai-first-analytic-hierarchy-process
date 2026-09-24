@@ -84,7 +84,7 @@ a {
   font-family: var(--font-display-stack);
   font-weight: 800;
   letter-spacing: -0.045em;
-  line-height: 0.92;
+  line-height: 1.08;
   font-size: clamp(2.35rem, 4.2vw + 0.6rem, 4.15rem);
   color: var(--ink);
   text-wrap: balance;
@@ -102,7 +102,7 @@ a {
   max-width: 32rem;
   color: var(--mute);
   font-size: clamp(0.95rem, 0.9vw + 0.7rem, 1.05rem);
-  line-height: 1.55;
+  line-height: 1.6;
 }
 
 .section-shell {
@@ -247,6 +247,8 @@ a {
 .stream-slot {
   position: relative;
   display: block;
+  /* Keep live + measure wraps identical; live must not spill into the next block */
+  overflow: hidden;
 }
 
 .stream-rushable {
@@ -258,20 +260,23 @@ a {
   outline-offset: 6px;
 }
 
-.stream-measure {
+.stream-measure,
+.stream-live {
   display: block;
+  /* same pad on both so wrap width matches (caret room) */
+  padding-inline-end: 0.45em;
+  white-space: inherit;
+  text-wrap: inherit;
+}
+
+.stream-measure {
   visibility: hidden;
   pointer-events: none;
-  /* keep wrap identical to live layer */
-  white-space: inherit;
 }
 
 .stream-live {
   position: absolute;
   inset: 0;
-  display: block;
-  /* slight right pad so caret never expands the box */
-  padding-inline-end: 0.35em;
 }
 
 .stream-cursor {
