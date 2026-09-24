@@ -226,10 +226,10 @@ func TestMatrixDialog(t *testing.T) {
 		},
 		Matrices: map[string]workspace.MatrixPayload{
 			"criteria": {
-				IDs:     []string{"cost", "quality"},
-				Names:   map[string]string{"cost": "Cost", "quality": "Quality"},
-				Weights: map[string]float64{"cost": 0.6, "quality": 0.4},
-				Matrix:  [][]float64{{1, 2}, {0.5, 1}},
+				IDs:      []string{"cost", "quality"},
+				Names:    map[string]string{"cost": "Cost", "quality": "Quality"},
+				Weights:  map[string]float64{"cost": 0.6, "quality": 0.4},
+				Matrix:   [][]float64{{1, 2}, {0.5, 1}},
 				Complete: true,
 			},
 		},
@@ -245,10 +245,56 @@ func TestMatrixDialog(t *testing.T) {
 		`width:80vw`,
 		`max-width:80%`,
 		`closedby="any"`,
+		`class="crit-weights"`,
+		`crit-weight-rank" aria-hidden="true">#1`,
+		`crit-weight-rank" aria-hidden="true">#2`,
+		`crit-weight-pct">60.0%`,
+		`crit-weight-pct">40.0%`,
+		`is-top`,
 	} {
 		if !strings.Contains(htmlOut, want) {
 			t.Fatalf("missing %q in matrix dialog HTML", want)
 		}
+	}
+	// Criteria card shows bars, not an inline matrix; judgments live in the dialog.
+	costIdx := strings.Index(htmlOut, `crit-weight-name">Cost`)
+	qualityIdx := strings.Index(htmlOut, `crit-weight-name">Quality`)
+	rank1 := strings.Index(htmlOut, `crit-weight-rank" aria-hidden="true">#1`)
+	if costIdx < 0 || qualityIdx < 0 || costIdx > qualityIdx {
+		t.Fatal("criteria weights should be sorted descending (Cost before Quality)")
+	}
+	if rank1 < 0 || rank1 > costIdx {
+		t.Fatal("#1 rank should precede top criterion name")
+	}
+	if strings.Count(htmlOut, `<table class="matrix"`) != 1 {
+		t.Fatal("criteria card should embed the pairwise table only inside Expand dialog")
+	}
+}
+
+func TestAlternativesMatrixStillInline(t *testing.T) {
+	htmlOut := HTML(&workspace.ComputeResult{
+		Title: "Alt matrix",
+		Criteria: []workspace.Criterion{
+			{ID: "cost", Name: "Cost"},
+		},
+		Matrices: map[string]workspace.MatrixPayload{
+			"alt:cost": {
+				IDs:      []string{"a", "b"},
+				Names:    map[string]string{"a": "A", "b": "B"},
+				Weights:  map[string]float64{"a": 0.7, "b": 0.3},
+				Matrix:   [][]float64{{1, 3}, {1.0 / 3, 1}},
+				Complete: true,
+			},
+		},
+	})
+	if strings.Contains(htmlOut, `class="crit-weights"`) {
+		t.Fatal("alt:* cards must stay matrices, not weight bars")
+	}
+	if !strings.Contains(htmlOut, `id="matrices-alternatives"`) {
+		t.Fatal("missing alternatives group")
+	}
+	if strings.Count(htmlOut, `<table class="matrix"`) < 2 {
+		t.Fatal("alt card should show inline matrix plus dialog matrix")
 	}
 }
 

@@ -6,23 +6,17 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type ReactNode,
 } from "react";
 import type { SectionId } from "./site";
 import { SECTIONS } from "./site";
 
-const FLASH_MS = 2000;
-
-type FlashState = { id: SectionId; token: number } | null;
-
 type ScrollState = {
   progress: number;
   active: SectionId;
   setActive: (id: SectionId) => void;
-  flash: FlashState;
-  /** Smooth-scroll to a section and highlight it for 2s. */
+  /** Smooth-scroll to a section. */
   goToSection: (id: SectionId) => void;
 };
 
@@ -58,8 +52,6 @@ export function isSectionId(value: string): value is SectionId {
 export function ScrollProvider({ children }: { children: ReactNode }) {
   const [progress, setProgress] = useState(0);
   const [active, setActive] = useState<SectionId>("hook");
-  const [flash, setFlash] = useState<FlashState>(null);
-  const flashTimer = useRef(0);
   const lenis = useLenis();
 
   useEffect(() => {
@@ -84,10 +76,6 @@ export function ScrollProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  useEffect(() => {
-    return () => window.clearTimeout(flashTimer.current);
-  }, []);
-
   const setActiveStable = useCallback((id: SectionId) => {
     setActive((prev) => (prev === id ? prev : id));
   }, []);
@@ -105,12 +93,6 @@ export function ScrollProvider({ children }: { children: ReactNode }) {
 
       window.history.replaceState(null, "", `#${id}`);
       setActiveStable(id);
-
-      window.clearTimeout(flashTimer.current);
-      setFlash({ id, token: Date.now() });
-      flashTimer.current = window.setTimeout(() => {
-        setFlash((prev) => (prev?.id === id ? null : prev));
-      }, FLASH_MS);
     },
     [lenis, setActiveStable],
   );
@@ -120,10 +102,9 @@ export function ScrollProvider({ children }: { children: ReactNode }) {
       progress,
       active,
       setActive: setActiveStable,
-      flash,
       goToSection,
     }),
-    [progress, active, setActiveStable, flash, goToSection],
+    [progress, active, setActiveStable, goToSection],
   );
 
   return <ScrollCtx.Provider value={value}>{children}</ScrollCtx.Provider>;

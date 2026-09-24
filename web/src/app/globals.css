@@ -100,7 +100,8 @@ a {
 
 .subline {
   max-width: 32rem;
-  color: var(--mute);
+  /* Brighter than --mute so body copy stays readable over the 3D scene */
+  color: color-mix(in oklab, var(--ink) 72%, var(--mute));
   font-size: clamp(0.95rem, 0.9vw + 0.7rem, 1.05rem);
   line-height: 1.6;
 }
@@ -124,22 +125,6 @@ a {
   width: 2px;
   background: linear-gradient(to bottom, transparent, var(--accent), transparent);
   opacity: 0.4;
-}
-
-.section-shell[data-flash] .stage {
-  border: 2px solid transparent;
-  border-radius: 1.25rem;
-  animation: section-border-blink 0.5s ease-in-out 4;
-}
-
-@keyframes section-border-blink {
-  0%,
-  100% {
-    border-color: transparent;
-  }
-  50% {
-    border-color: var(--accent);
-  }
 }
 
 .toc {

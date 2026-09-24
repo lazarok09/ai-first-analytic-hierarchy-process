@@ -238,6 +238,21 @@ th{font-size:.88rem;font-weight:600}
 td.num,th.num{text-align:right;font-family:var(--font-mono);font-size:.95em}
 .bar{height:10px;background:#ece7dc;border-radius:999px;overflow:hidden}
 .bar>span{display:block;height:100%;background:linear-gradient(90deg,#2a8f72,var(--accent));border-radius:999px}
+.crit-weights{display:flex;flex-direction:column;gap:.85rem;margin:.2rem 0 .1rem}
+.crit-weight-row{display:grid;grid-template-columns:2.4rem minmax(0,1fr) auto;column-gap:.65rem;row-gap:.35rem;align-items:baseline}
+.crit-weight-rank{
+  font-family:var(--font-sans);font-weight:700;font-size:.85rem;letter-spacing:.04em;
+  color:var(--accent);line-height:1
+}
+.crit-weight-name{font-weight:600;font-size:1.02rem;min-width:0;line-height:1.3;color:var(--ink)}
+.crit-weight-pct{
+  font-family:var(--font-sans);font-weight:700;font-variant-numeric:tabular-nums;
+  font-size:1.35rem;letter-spacing:-.02em;line-height:1;color:var(--ink);text-align:right
+}
+.crit-weight-bar{grid-column:1 / -1;height:14px;background:#ece7dc;border-radius:999px;overflow:hidden}
+.crit-weight-bar>span{display:block;height:100%;background:linear-gradient(90deg,#2a8f72,var(--accent));border-radius:999px}
+.crit-weight-row.is-top .crit-weight-pct{color:var(--accent)}
+.crit-weight-row.is-top .crit-weight-bar>span{background:linear-gradient(90deg,#1a7a62,var(--accent))}
 .warn-list{color:var(--warn)}
 code{font-family:var(--font-mono);font-size:.9em;line-height:1.35;background:#efeae1;padding:.05em .3em;border-radius:4px}
 
@@ -291,11 +306,11 @@ nav.toc a.toc-sub{display:none}
 .matrix-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px;border:1px solid var(--line)}
 .matrix-expand{
   appearance:none;cursor:pointer;font-family:var(--font-sans);font-weight:600;font-size:.88rem;
-  padding:.22rem .7rem;border-radius:999px;border:1px solid #c4b8a6;
-  background:#ece6da;color:#3d3830
+  padding:.22rem .7rem;border-radius:999px;border:1px solid #92400e;
+  background:#b45309;color:#fff
 }
-.matrix-expand:hover{background:#e3dccf;border-color:#b5a894}
-.matrix-expand:focus-visible{outline:2px solid #5c564c;outline-offset:2px}
+.matrix-expand:hover{background:#92400e;border-color:#78350f}
+.matrix-expand:focus-visible{outline:2px solid #b45309;outline-offset:2px}
 
 dialog.matrix-dialog{
   width:80vw;max-width:80%;max-height:85vh;
@@ -527,7 +542,7 @@ func describeMatrix(key string, criteria []workspace.Criterion) matrixMeta {
 			Key: key, Kind: "criteria", Badge: "Criteria",
 			Title:    "Criteria importance",
 			Short:    "Criteria importance",
-			Subtitle: "Which criteria matter more for the goal? (criterion vs criterion)",
+			Subtitle: "Local weights from the criteria pairwise (eigenvector). Expand for Saaty judgments.",
 		}
 	case strings.HasPrefix(key, "criteria:"):
 		pid := strings.TrimPrefix(key, "criteria:")
@@ -539,7 +554,7 @@ func describeMatrix(key string, criteria []workspace.Criterion) matrixMeta {
 			Key: key, Kind: "subcriteria", Badge: "Sub-criteria",
 			Title:    "Under “" + name + "”",
 			Short:    name + " (sub)",
-			Subtitle: "Relative importance of child criteria under this parent.",
+			Subtitle: "Local weights among children under this parent. Expand for Saaty judgments.",
 		}
 	case strings.HasPrefix(key, "alt:"):
 		cid := strings.TrimPrefix(key, "alt:")
@@ -587,20 +602,15 @@ func writeMatricesSection(b *strings.Builder, result *workspace.ComputeResult, m
 		}
 	}
 
-	b.WriteString(`<section id="matrices"><h2 id="matrices-h">Pairwise comparisons</h2>
-<p class="muted matrix-legend">Each cell is a Saaty judgment: teal = row preferred over column, coral = column preferred, neutral = equal. Diagonal is always 1.</p>
-<div class="legend-swatches" aria-hidden="true">
-<span class="sw lo s9"></span><span class="sw lo s5"></span><span class="sw eq"></span><span class="sw hi s5"></span><span class="sw hi s9"></span>
-<span class="legend-label">column wins ← equal → row wins</span>
-</div>`)
+	b.WriteString(`<section id="matrices"><h2 id="matrices-h">Pairwise comparisons</h2>`)
 
 	if len(critKeys) > 0 {
 		b.WriteString(`<div class="matrices-group" id="matrices-criteria">
-<h3>Criteria</h3>
-<p class="muted matrix-sub">How important each criterion is relative to the others.</p>
+<h3>Criteria importance</h3>
+<p class="muted matrix-sub">Bar length is the local weight (how much each criterion matters). Expand opens the Saaty pairwise judgments that produced these weights.</p>
 <div class="matrices-grid">`)
 		for _, key := range critKeys {
-			writeMatrixCard(b, key, result)
+			writeCriteriaWeightCard(b, key, result)
 		}
 		b.WriteString(`</div></div>`)
 	}
@@ -609,6 +619,11 @@ func writeMatricesSection(b *strings.Builder, result *workspace.ComputeResult, m
 		b.WriteString(`<div class="matrices-group" id="matrices-alternatives">
 <h3>Alternatives by criterion</h3>
 <p class="muted matrix-sub">For each criterion below, options are compared against each other — not criterion vs criterion.</p>
+<p class="muted matrix-legend">Each cell is a Saaty judgment: teal = row preferred over column, coral = column preferred, neutral = equal. Diagonal is always 1.</p>
+<div class="legend-swatches" aria-hidden="true">
+<span class="sw lo s9"></span><span class="sw lo s5"></span><span class="sw eq"></span><span class="sw hi s5"></span><span class="sw hi s9"></span>
+<span class="legend-label">column wins ← equal → row wins</span>
+</div>
 <div class="matrices-grid">`)
 		for _, key := range altKeys {
 			writeMatrixCard(b, key, result)
@@ -627,12 +642,41 @@ func writeMatricesSection(b *strings.Builder, result *workspace.ComputeResult, m
 	b.WriteString(`</section>`)
 }
 
+func writeCriteriaWeightCard(b *strings.Builder, key string, result *workspace.ComputeResult) {
+	m := result.Matrices[key]
+	meta := describeMatrix(key, result.Criteria)
+	mid := "matrix-" + slug(key)
+	dialogID := mid + "-dialog"
+
+	writeMatrixCardHeader(b, mid, dialogID, meta, m)
+	if len(m.IDs) == 0 {
+		b.WriteString(`<p class="muted">Empty matrix.</p></article>`)
+		return
+	}
+	writeCriteriaWeightBars(b, m)
+	writeMatrixJudgmentDialog(b, mid, dialogID, meta, m)
+	b.WriteString(`</article>`)
+}
+
 func writeMatrixCard(b *strings.Builder, key string, result *workspace.ComputeResult) {
 	m := result.Matrices[key]
 	meta := describeMatrix(key, result.Criteria)
 	mid := "matrix-" + slug(key)
 	dialogID := mid + "-dialog"
 
+	writeMatrixCardHeader(b, mid, dialogID, meta, m)
+	if len(m.IDs) == 0 {
+		b.WriteString(`<p class="muted">Empty matrix.</p></article>`)
+		return
+	}
+	b.WriteString(`<div class="matrix-wrap">`)
+	writeMatrixTable(b, m, false)
+	b.WriteString(`</div>`)
+	writeMatrixJudgmentDialog(b, mid, dialogID, meta, m)
+	b.WriteString(`</article>`)
+}
+
+func writeMatrixCardHeader(b *strings.Builder, mid, dialogID string, meta matrixMeta, m workspace.MatrixPayload) {
 	fmt.Fprintf(b, `<article class="matrix-card" id="%s"><header class="matrix-head"><div class="matrix-titles">`, mid)
 	fmt.Fprintf(b, `<span class="pill kind">%s</span>`, html.EscapeString(meta.Badge))
 	fmt.Fprintf(b, `<h3 id="%s-h">%s</h3>`, mid, html.EscapeString(meta.Title))
@@ -657,30 +701,61 @@ func writeMatrixCard(b *strings.Builder, key string, result *workspace.ComputeRe
 		)
 	}
 	b.WriteString(`</div></header>`)
-	if len(m.IDs) == 0 {
-		b.WriteString(`<p class="muted">Empty matrix.</p></article>`)
-		return
-	}
-	b.WriteString(`<div class="matrix-wrap">`)
-	writeMatrixTable(b, m, false)
-	b.WriteString(`</div>`)
+}
 
-	// Native <dialog> + invoker commands (no JS). Close via form method="dialog".
+func writeMatrixJudgmentDialog(b *strings.Builder, mid, dialogID string, meta matrixMeta, m workspace.MatrixPayload) {
 	fmt.Fprintf(b, `<dialog id="%s" class="matrix-dialog" closedby="any" aria-labelledby="%s-dialog-title">`, html.EscapeString(dialogID), mid)
 	b.WriteString(`<div class="matrix-dialog-shell">`)
 	b.WriteString(`<header class="matrix-dialog-head">`)
 	b.WriteString(`<div class="matrix-dialog-titles">`)
 	fmt.Fprintf(b, `<span class="pill kind">%s</span>`, html.EscapeString(meta.Badge))
-	fmt.Fprintf(b, `<h3 id="%s-dialog-title">%s</h3>`, mid, html.EscapeString(meta.Title))
+	fmt.Fprintf(b, `<h3 id="%s-dialog-title">%s — judgments</h3>`, mid, html.EscapeString(meta.Title))
 	if meta.Subtitle != "" {
-		fmt.Fprintf(b, `<p class="muted matrix-sub">%s</p>`, html.EscapeString(meta.Subtitle))
+		fmt.Fprintf(b, `<p class="muted matrix-sub">Saaty pairwise matrix that produced the local weights.</p>`)
 	}
 	b.WriteString(`</div>`)
 	b.WriteString(`<form method="dialog"><button class="matrix-dialog-close" value="close" aria-label="Close matrix">Close</button></form>`)
 	b.WriteString(`</header>`)
 	b.WriteString(`<div class="matrix-dialog-body"><div class="matrix-wrap matrix-wrap-dialog">`)
 	writeMatrixTable(b, m, true)
-	b.WriteString(`</div></div></div></dialog></article>`)
+	b.WriteString(`</div></div></div></dialog>`)
+}
+
+func writeCriteriaWeightBars(b *strings.Builder, m workspace.MatrixPayload) {
+	ids := append([]string(nil), m.IDs...)
+	sort.SliceStable(ids, func(i, j int) bool {
+		wi, wj := m.Weights[ids[i]], m.Weights[ids[j]]
+		if wi != wj {
+			return wi > wj
+		}
+		return ids[i] < ids[j]
+	})
+
+	b.WriteString(`<div class="crit-weights" role="img" aria-label="Criteria importance ranked by local weight">`)
+	for i, id := range ids {
+		wt := m.Weights[id]
+		name := m.Names[id]
+		if name == "" {
+			name = id
+		}
+		pct := wt * 100
+		if pct < 0 {
+			pct = 0
+		}
+		rank := i + 1
+		topClass := ""
+		if rank == 1 {
+			topClass = " is-top"
+		}
+		fmt.Fprintf(b, `<div class="crit-weight-row%s">
+<span class="crit-weight-rank" aria-hidden="true">#%d</span>
+<span class="crit-weight-name">%s</span>
+<span class="crit-weight-pct">%.1f%%</span>
+<div class="crit-weight-bar" title="local weight %.4f"><span style="width:%.1f%%"></span></div>
+</div>`,
+			topClass, rank, html.EscapeString(name), pct, wt, pct)
+	}
+	b.WriteString(`</div>`)
 }
 
 // writeMatrixTable emits one Saaty pairwise table. fullLabels uses longer header text (modal).
