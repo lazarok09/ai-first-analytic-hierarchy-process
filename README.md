@@ -9,6 +9,28 @@ One Go binary. CSV is the source of truth. Real AHP math — principal eigenvect
 [![Go](https://img.shields.io/badge/Go-1.25.5+-00ADD8?logo=go&logoColor=white)](./go.mod)
 [![Release](https://img.shields.io/github/v/release/lazarok09/ai-first-analytic-hierarchy-process?include_prereleases&label=release)](https://github.com/lazarok09/ai-first-analytic-hierarchy-process/releases)
 
+The loops below are the committed [`examples/vendor-selection`](./examples/vendor-selection) workspace — the same weights, Saaty matrix, and ranking `ahp compute` writes. Gold cells are judgments. Teal cells are their reciprocals.
+
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <img src="docs/assets/hierarchy.gif" width="100%" alt="3D hierarchy: the goal Choose a vendor splits into Cost 0.64, Quality 0.26, and Risk 0.10, then one shortlist of Acme, Initech, and Globex">
+      <br><b>Structure</b>
+      <br><sub>Goal, criteria weights, one shortlist</sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="docs/assets/pairwise.gif" width="100%" alt="3D Saaty matrix. Cost is 3 versus Quality and 5 versus Risk. Teal cells are reciprocals. Consistency ratio 0.03.">
+      <br><b>Judgments</b>
+      <br><sub>Saaty scale and CR 0.03</sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="docs/assets/ranking.gif" width="100%" alt="3D global ranking: Acme 0.41, Initech 0.33, Globex 0.26">
+      <br><b>Ranking</b>
+      <br><sub>Hierarchical synthesis</sub>
+    </td>
+  </tr>
+</table>
+
 ```bash
 go install github.com/lazarok09/ahp-method/cmd/ahp@latest
 ahp compute -w examples/vendor-selection
