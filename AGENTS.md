@@ -3,6 +3,7 @@
 This is a **Go** CLI (`ahp`), not Next.js or Python.
 
 - Read `docs/VISION.md` and `docs/architecture.md` before large changes.
+- **UI is one surface, never both.** A UI request is either the workspace report HTML (`internal/render` → `output/report.html`, via `ahp compute` / `ahp render` / `ahp open`) or the landing page (`web/`). Infer which one from the prompt. If it is not clear, ask the prompter before editing. Do not change the report and the landing page in the same task.
 - Domain math: `internal/engine`; CSV I/O: `internal/workspace`.
 - MCP tools wrap the same workspace functions as the CLI. Do not fork logic.
 - `propose_pairwise` must keep `status=proposal`.

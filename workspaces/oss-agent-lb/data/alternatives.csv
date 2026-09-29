@@ -1,0 +1,6 @@
+id,name,description
+bifrost,Bifrost,"maximhq/bifrost. Weighted key selection, failover, /openai and /anthropic drop-in including Responses, governance API for virtual keys and budgets. Apache-2.0. ~8.4k stars."
+gpt-load,GPT-Load,"tbphp/gpt-load. Self-hosted multi-credential gateway: API keys and subscription accounts, scheduling, failover, request logs and usage. MIT. ~7k stars."
+litellm,LiteLLM Proxy,"BerriAI/litellm. Gateway with deployment load balancing, virtual keys, budgets, Anthropic passthrough, and Responses API. License spdx NOASSERTION. ~60k stars, pushed 2026-09-29."
+new-api,new-api,"QuantumNous/new-api. Channels, multi-key weighted/round-robin, user and token quotas, model mapping, OpenAI/Claude/Gemini compatible relay. AGPL-3.0. ~49k stars."
+opencodex,opencodex,"lidge-jun/opencodex. Local proxy aimed at Codex and Claude Code, with ChatGPT account pools scheduled on 5h/weekly quota and session pin. MIT. ~17k stars."

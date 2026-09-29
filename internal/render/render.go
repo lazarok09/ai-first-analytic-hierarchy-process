@@ -27,7 +27,7 @@ func HTML(result *workspace.ComputeResult) string {
 	b.WriteString(` — AHP report</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet"/>
 <style>
 `)
 	b.WriteString(reportCSS)
@@ -42,7 +42,11 @@ func HTML(result *workspace.ComputeResult) string {
 	})
 
 	b.WriteString(`<div class="content"><header>
+<div class="header-bar">
 <p class="muted">Analytic Hierarchy Process — local workspace report</p>
+`)
+	writeFontPicker(&b)
+	b.WriteString(`</div>
 <h1>`)
 	b.WriteString(html.EscapeString(result.Title))
 	b.WriteString(`</h1>`)
@@ -183,6 +187,23 @@ func HTML(result *workspace.ComputeResult) string {
 	return b.String()
 }
 
+func writeFontPicker(b *strings.Builder) {
+	b.WriteString(`<details class="font-picker">
+<summary>
+<span class="font-kicker">Font</span>
+<span class="font-current" data-face="plex">IBM Plex</span>
+<span class="font-current" data-face="serif">Source Serif</span>
+<span class="font-current" data-face="atkinson">Atkinson</span>
+</summary>
+<fieldset class="font-menu">
+<legend>Report font</legend>
+<label class="font-option face-plex"><input type="radio" name="report-font" id="font-plex" checked>IBM Plex</label>
+<label class="font-option face-serif"><input type="radio" name="report-font" id="font-serif">Source Serif</label>
+<label class="font-option face-atkinson"><input type="radio" name="report-font" id="font-atkinson">Atkinson</label>
+</fieldset>
+</details>`)
+}
+
 const reportCSS = `
 :root{
   --bg:#f3f1eb;--ink:#1a1814;--muted:#5c564c;--line:#d6cec0;--card:#fffcf6;
@@ -213,6 +234,45 @@ body{
 }
 .content{min-width:0}
 header{padding:.35rem 0 0}
+.header-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem 1rem}
+.header-bar>.muted{margin:0;flex:1 1 auto}
+.font-picker{position:relative;flex:0 0 auto}
+.font-picker summary{
+  list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.45rem;
+  padding:.32rem .7rem;border:1px solid var(--line);border-radius:999px;background:var(--card);
+  font-weight:600;color:var(--ink);line-height:1.3
+}
+.font-picker summary::-webkit-details-marker{display:none}
+.font-picker summary::after{content:"▾";color:var(--muted);font-size:.8rem;line-height:1}
+.font-picker[open] summary{border-color:var(--accent);background:var(--accent-soft)}
+.font-picker[open] summary::after{content:"▴"}
+.font-kicker{color:var(--muted);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:.72rem}
+.font-current{display:none}
+html:not(:has(#font-serif:checked)):not(:has(#font-atkinson:checked)) .font-current[data-face="plex"],
+html:has(#font-plex:checked) .font-current[data-face="plex"]{display:inline}
+html:has(#font-serif:checked) .font-current[data-face="serif"]{display:inline}
+html:has(#font-atkinson:checked) .font-current[data-face="atkinson"]{display:inline}
+html:has(#font-serif:checked){--font-sans:"Source Serif 4",Palatino,"Palatino Linotype",Georgia,serif}
+html:has(#font-atkinson:checked){--font-sans:"Atkinson Hyperlegible Next","Atkinson Hyperlegible",Verdana,sans-serif}
+.font-menu{
+  position:absolute;right:0;z-index:80;margin:.4rem 0 0;padding:.4rem;min-width:12.5rem;
+  border:1px solid var(--line);border-radius:12px;background:var(--card);
+  box-shadow:0 12px 28px rgba(28,25,22,.1);display:flex;flex-direction:column;gap:.15rem
+}
+.font-menu legend{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0,0,0,0);white-space:nowrap;border:0
+}
+.font-option{
+  display:flex;align-items:center;gap:.5rem;margin:0;padding:.45rem .6rem;border-radius:8px;
+  cursor:pointer;font-weight:600;line-height:1.3
+}
+.font-option:hover{background:var(--accent-soft)}
+.font-option:has(input:checked){background:var(--accent-soft);color:var(--accent)}
+.font-option input{margin:0;accent-color:var(--accent)}
+.face-plex{font-family:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif}
+.face-serif{font-family:"Source Serif 4",Palatino,"Palatino Linotype",Georgia,serif}
+.face-atkinson{font-family:"Atkinson Hyperlegible Next","Atkinson Hyperlegible",Verdana,sans-serif}
 main{padding:.25rem 0 0}
 footer{padding:1.5rem 0 0;color:var(--muted);font-size:.92rem}
 h1{font-size:clamp(1.65rem,4.5vw,2.35rem);margin:0 0 .45rem;letter-spacing:-.02em;line-height:1.2;font-weight:700}

@@ -93,6 +93,13 @@ func TestHTMLTOCTitlesNoScript(t *testing.T) {
 	}
 	for _, want := range []string{
 		"IBM Plex Sans",
+		"Source Serif 4",
+		"Atkinson Hyperlegible Next",
+		`class="font-picker"`,
+		`id="font-plex" checked`,
+		`id="font-serif"`,
+		`id="font-atkinson"`,
+		`html:has(#font-serif:checked)`,
 		"tabular-nums",
 		`>How this method works</a>`,
 		`>Global ranking (Saaty)</a>`,
