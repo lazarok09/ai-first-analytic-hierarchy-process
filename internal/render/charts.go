@@ -91,8 +91,8 @@ func writeChoiceProfileRadar(b *strings.Builder, result *workspace.ComputeResult
 	n := len(axes)
 
 	b.WriteString(`<div class="chart-card" id="ranking-radar">
-<p class="chart-kicker">Choice profile</p>
-<p class="muted chart-lede">Radar of local weights per criterion (from each <code>alt:*</code> matrix). Farther from center = stronger on that criterion — not the global rank alone.</p>
+<h3 id="ranking-radar-h">Choice profile</h3>
+<p class="muted chart-lede">Each shape is one alternative. Each spoke is a criterion. Farther from the center means stronger on that spoke. The table above multiplies that strength by how much the criterion matters.</p>
 `)
 	fmt.Fprintf(b, `<svg class="radar" viewBox="0 0 %.0f %.0f" role="img" aria-label="Radar chart of alternatives across criteria">`, vbW, vbH)
 

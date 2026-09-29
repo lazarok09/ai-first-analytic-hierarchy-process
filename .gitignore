@@ -8,13 +8,16 @@ dist/
 .env.*
 !.env.example
 
-# Generated AHP outputs (keep example workspace data)
+# Generated AHP outputs (keep the public sample under examples/)
 output/
 examples/**/output/
 
 # Ephemeral per-run journal snapshots
 tmp/
 **/tmp/
+
+# Local decisions from the CLI. Public sample stays in examples/.
+/workspaces/
 
 # Product site (Next.js)
 web/node_modules/

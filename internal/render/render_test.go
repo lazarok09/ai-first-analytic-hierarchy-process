@@ -154,6 +154,8 @@ func TestChoiceProfileRadar(t *testing.T) {
 	for _, want := range []string{
 		`id="ranking-radar"`,
 		`Choice profile`,
+		`Each shape is one alternative`,
+		`how much the criterion matters`,
 		`<svg class="radar"`,
 		`radar-series`,
 		`>Acme</li>`,
@@ -161,6 +163,7 @@ func TestChoiceProfileRadar(t *testing.T) {
 		`>Cost</tspan>`,
 		`>Quality</tspan>`,
 		`>Risk</tspan>`,
+		`href="#ranking-radar" class="toc-sub">Choice profile</a>`,
 	} {
 		if !strings.Contains(htmlOut, want) {
 			t.Fatalf("missing %q in radar HTML", want)
@@ -179,6 +182,12 @@ func TestChoiceProfileRadar(t *testing.T) {
 	})
 	if strings.Contains(thin, `id="ranking-radar"`) {
 		t.Fatal("radar should not render with fewer than 3 criteria")
+	}
+	rankAt := strings.Index(htmlOut, `id="ranking-h"`)
+	radarAt := strings.Index(htmlOut, `id="ranking-radar"`)
+	explainAt := strings.Index(htmlOut, `id="explain-h"`)
+	if rankAt < 0 || radarAt < rankAt || explainAt < radarAt {
+		t.Fatal("radar should sit in the ranking section, after the rank heading and before contribution breakdown")
 	}
 }
 
@@ -221,6 +230,12 @@ func TestContributionBars(t *testing.T) {
 	}
 	if strings.Contains(htmlOut, `id="ranking-curve"`) {
 		t.Fatal("score curve should be gone")
+	}
+	explainAt := strings.Index(htmlOut, `id="explain-h"`)
+	contribAt := strings.Index(htmlOut, `id="ranking-contrib"`)
+	firstTable := strings.Index(htmlOut, `id="explain-acme"`)
+	if explainAt < 0 || contribAt < explainAt || (firstTable >= 0 && firstTable < contribAt) {
+		t.Fatal("contribution chart should follow the breakdown heading and precede per-alternative tables")
 	}
 }
 
@@ -302,6 +317,48 @@ func TestAlternativesMatrixStillInline(t *testing.T) {
 	}
 	if strings.Count(htmlOut, `<table class="matrix"`) < 2 {
 		t.Fatal("alt card should show inline matrix plus dialog matrix")
+	}
+}
+
+func TestPairwiseJudgmentsReadable(t *testing.T) {
+	htmlOut := HTML(&workspace.ComputeResult{
+		Criteria: []workspace.Criterion{
+			{ID: "pool", Name: "Seat pool"},
+			{ID: "harness", Name: "Codex and Claude Code"},
+		},
+		Alternatives: []workspace.Alternative{
+			{ID: "new-api", Name: "new-api"},
+			{ID: "litellm", Name: "LiteLLM Proxy"},
+		},
+		Matrices: map[string]workspace.MatrixPayload{
+			"criteria": {},
+			"alt:pool": {},
+		},
+		Pairwise: []workspace.PairwiseRow{
+			{Matrix: "alt:pool", Left: "new-api", Right: "litellm", Value: 2, Status: "committed", Note: "quota ledger"},
+			{Matrix: "criteria", Left: "pool", Right: "harness", Value: 1, Status: "committed"},
+		},
+	})
+	for _, want := range []string{
+		`id="data-pairwise"`,
+		`Same Saaty judgments as the matrices above`,
+		`id="pairs-criteria"`,
+		`>Criteria importance</h3>`,
+		`Seat pool and Codex and Claude Code are equal`,
+		`id="pairs-alt-pool"`,
+		`new-api is stronger than LiteLLM Proxy`,
+		`class="num hi s2"`,
+		`quota ledger`,
+	} {
+		if !strings.Contains(htmlOut, want) {
+			t.Fatalf("missing %q in pairwise judgments", want)
+		}
+	}
+	if strings.Contains(htmlOut, `>matrix</th>`) {
+		t.Fatal("pairwise table still uses raw CSV column names")
+	}
+	if strings.Contains(htmlOut, `>Status</th>`) {
+		t.Fatal("committed-only judgments should omit the status column")
 	}
 }
 

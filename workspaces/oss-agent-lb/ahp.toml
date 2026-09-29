@@ -1,3 +1,0 @@
-[decision]
-title = "OSS baseline for a corporate seat-pool load balancer"
-description = "Compare open-source gateways that pool API keys or seats by usage and limits, can top up credit or reroute to an available model, and can sit in front of Codex and Claude Code. Own stack is the design being compared, not a scored alternative."

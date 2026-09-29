@@ -1,5 +1,0 @@
-id,name,parent_id,description
-control,Corporate control plane,,"Self-host so the org holds upstream keys, issues its own credentials, and can see per-seat usage. License must allow that internal service."
-fallback,Credit or reroute,,"When a seat is out of credit or rate limit, sell or top up credit, or send the request to another model or key that still has capacity."
-harness,Codex and Claude Code,,"Same proxy can be the client endpoint for Codex (Responses API, tools, streaming) and Claude Code (Anthropic Messages)."
-pool,Seat pool,,"Spread work across seats or API keys using live usage and limits (weights, cooldown, remaining quota), not round-robin alone."
