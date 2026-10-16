@@ -100,7 +100,7 @@ export function StreamText({
       const ch = text[next - 1];
       const pause =
         ch === "." || ch === "—" || ch === "," || ch === "!" || ch === "?"
-          ? 220
+          ? 120
           : ch === " "
             ? 40
             : 0;

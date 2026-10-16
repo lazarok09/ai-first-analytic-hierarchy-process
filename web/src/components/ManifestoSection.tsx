@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, useReducedMotion } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
 import { useScrollState } from "@/lib/scroll-store";
 import type { SectionId } from "@/lib/site";
@@ -27,13 +27,21 @@ export function ManifestoSection({
 }: Props) {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { amount: 0.4, margin: "-8% 0px -8% 0px" });
+  const reduceMotion = useReducedMotion();
   const { setActive } = useScrollState();
+  const stream = id === "hook" && !reduceMotion;
+  const streamClose = id === "close" && !reduceMotion;
   const [lineDone, setLineDone] = useState(false);
   const [subDone, setSubDone] = useState(false);
+  const [entered, setEntered] = useState(false);
 
   useEffect(() => {
     if (inView) setActive(id);
   }, [inView, id, setActive]);
+
+  useEffect(() => {
+    if (reduceMotion || inView) setEntered(true);
+  }, [reduceMotion, inView]);
 
   return (
     <section
@@ -48,72 +56,142 @@ export function ManifestoSection({
           aria-hidden
         />
 
-        <motion.p
-          className="kicker mb-5"
-          initial={{ opacity: 0, y: 14 }}
-          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0.15, y: 10 }}
-          transition={{ duration: 0.9, ease }}
-        >
-          {kicker}
-        </motion.p>
+        {streamClose ? (
+          <>
+            <motion.div
+              initial={false}
+              animate={entered ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+              transition={{ duration: 0.4, ease }}
+            >
+              <p className="kicker mb-5">{kicker}</p>
+              <h2 id={`${id}-line`} className="manifesto-line">
+                {line}
+              </h2>
+            </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 28 }}
-          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0.2, y: 18 }}
-          transition={{ duration: 1.05, delay: 0.08, ease }}
-        >
-          <StreamText
-            id={`${id}-line`}
-            as="h2"
-            className="manifesto-line"
-            text={line}
-            active={inView}
-            cps={16}
-            delayMs={280}
-            onDone={() => setLineDone(true)}
-          />
-        </motion.div>
+            <motion.div
+              className="mt-10"
+              initial={false}
+              animate={inView ? { opacity: 1 } : { opacity: 0 }}
+              transition={{ duration: 0.4, ease }}
+            >
+              <StreamText
+                as="p"
+                className="subline"
+                text={sub}
+                active={inView}
+                cps={36}
+                delayMs={120}
+                showCursor
+                onDone={() => setSubDone(true)}
+              />
+            </motion.div>
 
-        {/* Sub always reserves its final height; only fades in when line finishes */}
-        <motion.div
-          className={`mt-10 ${align === "right" ? "ml-auto" : ""}`}
-          initial={false}
-          animate={
-            inView && lineDone
-              ? { opacity: 1 }
-              : { opacity: 0 }
-          }
-          transition={{ duration: 0.75, ease }}
-          style={{ pointerEvents: inView && lineDone ? "auto" : "none" }}
-        >
-          <StreamText
-            as="p"
-            className={`subline ${align === "right" ? "ml-auto" : ""}`}
-            text={sub}
-            active={inView && lineDone}
-            cps={22}
-            delayMs={420}
-            showCursor
-            onDone={() => setSubDone(true)}
-          />
-        </motion.div>
+            {children ? (
+              <motion.div
+                className="mt-8"
+                initial={false}
+                animate={
+                  inView && subDone ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }
+                }
+                transition={{ duration: 0.45, ease }}
+                style={{ pointerEvents: inView && subDone ? "auto" : "none" }}
+                aria-hidden={!(inView && subDone)}
+              >
+                {children}
+              </motion.div>
+            ) : null}
+          </>
+        ) : stream ? (
+          <>
+            <motion.p
+              className="kicker mb-5"
+              initial={{ opacity: 0, y: 14 }}
+              animate={inView ? { opacity: 1, y: 0 } : { opacity: 0.15, y: 10 }}
+              transition={{ duration: 0.9, ease }}
+            >
+              {kicker}
+            </motion.p>
 
-        {children ? (
+            <motion.div
+              initial={{ opacity: 0, y: 28 }}
+              animate={inView ? { opacity: 1, y: 0 } : { opacity: 0.2, y: 18 }}
+              transition={{ duration: 1.05, delay: 0.08, ease }}
+            >
+              <StreamText
+                id={`${id}-line`}
+                as="h2"
+                className="manifesto-line"
+                text={line}
+                active={inView}
+                cps={26}
+                delayMs={160}
+                onDone={() => setLineDone(true)}
+              />
+            </motion.div>
+
+            <motion.div
+              className={`mt-10 ${align === "right" ? "ml-auto" : ""}`}
+              initial={false}
+              animate={inView && lineDone ? { opacity: 1 } : { opacity: 0 }}
+              transition={{ duration: 0.75, ease }}
+              style={{ pointerEvents: inView && lineDone ? "auto" : "none" }}
+            >
+              <StreamText
+                as="p"
+                className={`subline ${align === "right" ? "ml-auto" : ""}`}
+                text={sub}
+                active={inView && lineDone}
+                cps={36}
+                delayMs={200}
+                showCursor
+                onDone={() => setSubDone(true)}
+              />
+            </motion.div>
+
+            {children ? (
+              <motion.div
+                className={`mt-8 ${align === "right" ? "flex justify-end" : ""}`}
+                initial={false}
+                animate={
+                  inView && subDone ? { opacity: 1, y: 0 } : { opacity: 0, y: 0 }
+                }
+                transition={{ duration: 0.7, ease }}
+                style={{ pointerEvents: inView && subDone ? "auto" : "none" }}
+                aria-hidden={!(inView && subDone)}
+              >
+                {children}
+              </motion.div>
+            ) : null}
+          </>
+        ) : (
           <motion.div
-            className={`mt-8 ${align === "right" ? "flex justify-end" : ""}`}
-            initial={false}
+            initial={reduceMotion ? false : { opacity: 0, y: 16 }}
             animate={
-              inView && subDone
+              entered || reduceMotion
                 ? { opacity: 1, y: 0 }
-                : { opacity: 0, y: 0 }
+                : { opacity: 0, y: 16 }
             }
-            transition={{ duration: 0.7, ease }}
-            style={{ pointerEvents: inView && subDone ? "auto" : "none" }}
-            aria-hidden={!(inView && subDone)}
+            transition={{ duration: reduceMotion ? 0 : 0.4, ease }}
           >
-            {children}
+            <p className="kicker mb-5">{kicker}</p>
+            <h2 id={`${id}-line`} className="manifesto-line">
+              {line}
+            </h2>
+            <p
+              className={`subline mt-10 ${align === "right" ? "ml-auto" : ""}`}
+            >
+              {sub}
+            </p>
+            {children ? (
+              <div
+                className={`mt-8 ${align === "right" ? "flex justify-end" : ""}`}
+              >
+                {children}
+              </div>
+            ) : null}
           </motion.div>
-        ) : null}
+        )}
       </div>
     </section>
   );

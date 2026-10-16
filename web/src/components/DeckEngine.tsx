@@ -88,7 +88,8 @@ export function DeckEngine() {
 
   useFrame((state, delta) => {
     pulse.current += delta;
-    const t = pulse.current;
+    // Shared clock for idle motion. Section 02 (Prove it) is the shuffle, and the raw rate felt frantic.
+    const t = pulse.current * 0.4;
     const stage = stageBlend(active, progress);
     const cam = state.camera as THREE.PerspectiveCamera;
 
@@ -113,7 +114,7 @@ export function DeckEngine() {
     }
 
     if (core.current) {
-      core.current.rotation.y += delta * 0.4;
+      core.current.rotation.y += delta * 0.16;
       core.current.rotation.x = Math.sin(t * 0.5) * 0.2;
       const cm = core.current.material as THREE.MeshStandardMaterial;
       cm.emissiveIntensity = 0.35 + heat * 0.4 + close * 0.2;
@@ -223,7 +224,7 @@ export function DeckEngine() {
         1.4 + Math.sin(orbit * 1.3) * 0.4,
         Math.sin(orbit) * 2.2,
       );
-      mesh.rotation.y += delta * 0.8;
+      mesh.rotation.y += delta * 0.32;
       (mesh.material as THREE.MeshStandardMaterial).opacity = v * 0.45;
     });
   });
