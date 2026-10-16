@@ -1,7 +1,12 @@
+const siteUrl = (
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  "https://lazarok09.github.io/ai-first-analytic-hierarchy-process"
+).replace(/\/$/, "");
+
 export const SITE = {
   name: "ahp",
   tagline: "Ask. Compare. Decide — with Analytic Hierarchy Process.",
-  url: "https://lazarok09.github.io",
+  url: siteUrl,
   github: "https://github.com/lazarok09/ai-first-analytic-hierarchy-process",
   releases:
     "https://github.com/lazarok09/ai-first-analytic-hierarchy-process/releases",
