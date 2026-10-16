@@ -1,7 +1,7 @@
 export const SITE = {
   name: "ahp",
   tagline: "Ask. Compare. Decide — with Analytic Hierarchy Process.",
-  url: "https://lazarok09.github.io/ai-first-analytic-hierarchy-process",
+  url: "https://lazarok09.github.io",
   github: "https://github.com/lazarok09/ai-first-analytic-hierarchy-process",
   releases:
     "https://github.com/lazarok09/ai-first-analytic-hierarchy-process/releases",
