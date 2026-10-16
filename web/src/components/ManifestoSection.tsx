@@ -67,36 +67,16 @@ export function ManifestoSection({
               <h2 id={`${id}-line`} className="manifesto-line">
                 {line}
               </h2>
-            </motion.div>
-
-            <motion.div
-              className="mt-10"
-              initial={false}
-              animate={inView ? { opacity: 1 } : { opacity: 0 }}
-              transition={{ duration: 0.4, ease }}
-            >
-              <StreamText
-                as="p"
-                className="subline"
-                text={sub}
-                active={inView}
-                cps={36}
-                delayMs={120}
-                showCursor
-                onDone={() => setSubDone(true)}
-              />
+              <p className="subline mt-10">{sub}</p>
             </motion.div>
 
             {children ? (
               <motion.div
                 className="mt-8"
                 initial={false}
-                animate={
-                  inView && subDone ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }
-                }
-                transition={{ duration: 0.45, ease }}
-                style={{ pointerEvents: inView && subDone ? "auto" : "none" }}
-                aria-hidden={!(inView && subDone)}
+                animate={entered ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
+                transition={{ duration: 0.45, delay: 0.12, ease }}
+                style={{ pointerEvents: entered ? "auto" : "none" }}
               >
                 {children}
               </motion.div>

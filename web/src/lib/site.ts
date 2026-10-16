@@ -23,7 +23,7 @@ export const SECTIONS = [
     title: "AHP",
     kicker: "01 — AHP",
     line: "A decision made by science.",
-    sub: "Ask a question. Name what matters. What you get back is ranked by the Analytic Hierarchy Process — options compared side by side with science, so you can trust the answer. Agents collect and calculate; you pick the winner.",
+    sub: "A laptop, a hire, a vendor. The calls that cost real money. You leave with one winner, and a reason strong enough to show anyone who asks.",
   },
   {
     id: "lie",
@@ -37,7 +37,7 @@ export const SECTIONS = [
     title: "Yours",
     kicker: "03 — YOURS",
     line: "Your questions will be safe.",
-    sub: "We don’t hold your data. No cloud, cookies, or third parties. You are safe to ask anything.",
+    sub: "No cloud, no third parties. The question never leaves your computer.",
   },
   {
     id: "agent",
