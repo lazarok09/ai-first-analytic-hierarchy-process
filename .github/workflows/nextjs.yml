@@ -1,4 +1,5 @@
 # GitHub Pages "Next.js" workflow, with the app in web/.
+# Probe commit to confirm git push auth.
 # configure-pages injects basePath from the Pages site URL (project path on
 # github.io, or "/" when a custom domain is set).
 name: Deploy Next.js site to Pages
