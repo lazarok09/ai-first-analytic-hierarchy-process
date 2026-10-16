@@ -1,5 +1,6 @@
 "use client";
 
+import { Logo } from "@/components/Logo";
 import { SECTIONS, SITE } from "@/lib/site";
 import { useScrollState } from "@/lib/scroll-store";
 
@@ -12,12 +13,13 @@ export function TopBar() {
         <div className="flex items-center justify-between gap-3">
           <a
             href="#hook"
-            className="font-display text-lg font-bold tracking-tight text-steel-bright"
+            className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-steel-bright"
             onClick={(e) => {
               e.preventDefault();
               goToSection("hook");
             }}
           >
+            <Logo className="size-7 shrink-0" />
             {SITE.name}
             <span className="ml-2 font-mono text-[0.65rem] font-normal tracking-[0.2em] text-amber uppercase">
               cli
